@@ -86,9 +86,15 @@ static inline std::string getRomFolderFromNvs(
     return path.substr(0, slash);
 }
 
-
 static inline bool isQuittingGame() {
-  // We use deep sleep as a hack to avoid memory management issues when releasing emu cores
-  return (esp_reset_reason() == ESP_RST_DEEPSLEEP) &&
-         (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER);
+    Preferences prefs;
+    prefs.begin("cardputer_emu", false);
+    bool quitting = prefs.getBool("quit_game", false);
+
+    if (quitting) {
+        prefs.putBool("quit_game", false);
+    }
+
+    prefs.end();
+    return quitting;
 }
