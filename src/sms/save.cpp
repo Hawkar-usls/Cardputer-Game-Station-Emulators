@@ -5,13 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <unistd.h>
-
-#ifndef PATH_MAX
-#define PATH_MAX 261
-#endif
-
-#define CHECK_MS  500
-#define GAP_MS    5000
+#include "share/game_save.h"  
 
 static uint8_t* g_sram = NULL;
 static size_t   g_sram_len = 0;
@@ -28,53 +22,12 @@ static void ensure_dir(void){
   mkdir("/sd/sms_saves", 0777); 
 }
 
-static uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len){
-  static uint32_t* T = nullptr;
-  static int init = 0;
+static bool flush_now(void){
+  if (!g_sram || !g_sram_len) return false;
 
-  if (!T) {
-    T = (uint32_t*)malloc(256 * sizeof(uint32_t));
-    if (!T) abort();
-  }
-
-  if(!init){ for(uint32_t i=0;i<256;i++){ uint32_t c=i; for(int k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>1)):(c>>1); T[i]=c; } init=1; }
-  crc^=0xFFFFFFFFU; for(size_t i=0;i<len;i++) crc=T[(crc^buf[i])&0xFF]^ (crc>>8); return crc^0xFFFFFFFFU;
-}
-
-static int sram_is_trivial(const uint8_t* p, size_t n) {
-  if (!p || n == 0) return 1;
-  // Test 0xFF
-  size_t i = 0;
-  for (; i < n; ++i) { if (p[i] != 0xFF) break; }
-  if (i == n) return 1;
-
-  // Test 0x00
-  for (i = 0; i < n; ++i) { if (p[i] != 0x00) break; }
-  if (i == n) return 1;
-
-  return 0; // not trivial
-}
-
-static void make_save_path_from_name(char* dst, size_t dstlen, const char* romName){
-  char name[128];
-  strncpy(name, romName ? romName : "rom.sms", sizeof(name)-1);
-  name[sizeof(name)-1]='\0';
-
-  size_t L = strlen(name);
-  if (L >= 4) { name[L-3]='s'; name[L-2]='a'; name[L-1]='v'; }
-  else { strncat(name, ".sav", sizeof(name)-strlen(name)-1); }
-
-  ensure_dir();
-  snprintf(dst, dstlen, "/sd/sms_saves/%s", name);
-  dst[dstlen-1]='\0';
-}
-
-static void flush_now(void){
-  if (!g_sram || !g_sram_len) return;
-
-  if (sram_is_trivial(g_sram, g_sram_len)) {
+  if (share::gameSaveIsTrivialSram(g_sram, g_sram_len)) {
     printf("SMS save: skip trivial SRAM, no write.\n");
-    return;
+    return false; 
   }
 
   const uint8_t* src = g_sram;
@@ -82,6 +35,8 @@ static void flush_now(void){
     memcpy(g_sram_shadow, g_sram, g_sram_len);
     src = g_sram_shadow;
   }
+
+  share::setGameIsSaving(true);
 
   ensure_dir();
 
@@ -93,7 +48,7 @@ static void flush_now(void){
   FILE* f = fopen(tmp_path, "wb");
   if (!f) {
     printf("SMS save: fopen tmp fail %s\n", tmp_path);
-    return;
+    return false;
   }
   setvbuf(f, NULL, _IONBF, 0);
 
@@ -105,18 +60,21 @@ static void flush_now(void){
   if (w != g_sram_len) {
     printf("SMS save: short write %u/%u to %s\n",
            (unsigned)w, (unsigned)g_sram_len, tmp_path);
-    return;
+    return false;
   }
 
   // Unlink + rename
   unlink(g_save_path);
   if (rename(tmp_path, g_save_path) != 0) {
     printf("SMS save: rename failed %s -> %s\n", tmp_path, g_save_path);
-    return;
+    return false;
   }
 
   printf("SMS save: wrote %u/%u -> %s \n",
          (unsigned)w, (unsigned)g_sram_len, g_save_path);
+         
+  share::setGameIsSaving(false);
+  return true;
 }
 
 static void SaveTask(void*){
@@ -130,10 +88,11 @@ static void SaveTask(void*){
     TickType_t now = xTaskGetTickCount();
 
     if (do_check) {
-      uint32_t crc = crc32_update(0, g_sram, g_sram_len);
+      uint32_t crc = share::gameSaveCrc32Update(0, g_sram, g_sram_len);
       if (crc != g_crc_last && now >= g_next_allowed_write){
         g_crc_last = crc;
-        if (!sram_is_trivial(g_sram, g_sram_len)) {
+
+        if (!share::gameSaveIsTrivialSram(g_sram, g_sram_len)) {
           do_flush = true;
         } else {
           printf("SMS save: trivial after change, skip write.\n");
@@ -143,8 +102,15 @@ static void SaveTask(void*){
 
     // flush if requested and allowed
     if (do_flush && now >= g_next_allowed_write) {
-      flush_now();
-      g_next_allowed_write = xTaskGetTickCount() + pdMS_TO_TICKS(GAP_MS);
+      bool ok = flush_now();
+      if (ok) {
+        // save OK
+        g_next_allowed_write = xTaskGetTickCount() + pdMS_TO_TICKS(GAP_MS);
+      } else {
+        // failed, dont delay next attempt
+        g_crc_last = 0xFFFFFFFFu;
+        printf("SMS save: flush failed, will retry on next tick.\n");
+      }
     }
   }
 }
@@ -156,8 +122,8 @@ void sms_save_init(const char* romName, uint8_t* sramPtr, size_t sramLen){
   }
   g_sram = sramPtr;
   g_sram_len = sramLen;
-  make_save_path_from_name(g_save_path, PATH_MAX, romName);
-  g_crc_last = (g_sram && g_sram_len) ? crc32_update(0, g_sram, g_sram_len) : 0;
+  share::gameSaveBuildPath(g_save_path, PATH_MAX, "/sd/sms_saves", romName, "rom.sms");
+  g_crc_last = (g_sram && g_sram_len) ? share::gameSaveCrc32Update(0, g_sram, g_sram_len) : 0;
   g_next_check = g_next_allowed_write = 0;
 
   // snapshot SRAM
@@ -178,13 +144,38 @@ void sms_save_load(void){
   if (!g_sram || !g_sram_len) return;
   memset(g_sram, 0xFF, g_sram_len);
 
+  ensure_dir(); 
+
+  char tmp_path[PATH_MAX];
+  snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", g_save_path);
+  tmp_path[sizeof(tmp_path)-1] = '\0';
+
+  const char* loaded_path = g_save_path;
+
+  // Try to load .sav
   FILE* f = fopen(g_save_path, "rb");
-  if (!f){ printf("SMS load: no save, %s\n", g_save_path); return; }
+  if (!f) {
+    // Try to load .tmp
+    f = fopen(tmp_path, "rb");
+    if (!f) {
+      printf("SMS load: no save, %s nor %s\n", g_save_path, tmp_path);
+      return;
+    }
+
+    printf("SMS load: .sav missing, using tmp %s\n", tmp_path);
+    loaded_path = tmp_path;
+  }
+
   size_t n = fread(g_sram, 1, g_sram_len, f);
   fclose(f);
-  if (n < g_sram_len) memset(g_sram+n, 0xFF, g_sram_len-n);
-  g_crc_last = crc32_update(0, g_sram, g_sram_len);
-  printf("SMS load: read %u/%u from %s\n",(unsigned)n,(unsigned)g_sram_len,g_save_path);
+
+  if (n < g_sram_len)
+    memset(g_sram + n, 0xFF, g_sram_len - n);
+
+  g_crc_last = share::gameSaveCrc32Update(0, g_sram, g_sram_len);
+
+  printf("SMS load: read %u/%u from %s\n",
+         (unsigned)n, (unsigned)g_sram_len, loaded_path);
 }
 
 void sms_save_tick(void){

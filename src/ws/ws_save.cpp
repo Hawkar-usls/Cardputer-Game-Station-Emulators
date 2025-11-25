@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "share/game_save.h"
 
 extern "C" {
 // Core WS 
@@ -19,8 +20,6 @@ extern int CartKind;
 #endif
 
 #define WS_SAVE_DIR "/sd/ws_saves"
-#define CHECK_MS    500
-#define GAP_MS      10000
 
 static uint8_t*     g_sram        = nullptr;   // pointer vers RAMMap
 static size_t       g_sram_len    = 0;         // = RAMSize
@@ -34,61 +33,13 @@ static volatile bool g_flag_check = false;
 static TickType_t g_first_dirty = 0;
 static TickType_t g_last_save   = 0;
 
-// ====================== CRC32 ======================
-static uint32_t* s_crc32_tbl = NULL;  // 256 * 4
-static int       s_crc32_ok  = 0;    
-
-static void crc32_init_once(void) {
-  if (s_crc32_ok != 0) return; 
-  uint32_t* T = (uint32_t*)malloc(256 * sizeof(uint32_t));
-  if (!T) { s_crc32_ok = -1; return; }
-
-  for (uint32_t i = 0; i < 256; ++i) {
-    uint32_t c = i;
-    for (int k = 0; k < 8; ++k)
-      c = (c & 1) ? (0xEDB88320u ^ (c >> 1)) : (c >> 1);
-    T[i] = c;
-  }
-  s_crc32_tbl = T;
-  s_crc32_ok  = 1;
-}
-
-static uint32_t crc32_update(uint32_t crc, const uint8_t* b, size_t n) {
-  if (s_crc32_ok == 0) crc32_init_once();
-
-  crc ^= 0xFFFFFFFFu;
-
-  if (s_crc32_ok > 0 && s_crc32_tbl) {
-    const uint32_t* T = s_crc32_tbl;
-    for (size_t i = 0; i < n; ++i)
-      crc = T[(crc ^ b[i]) & 0xFFu] ^ (crc >> 8);
-  } else {
-    // Fallback bitwise
-    for (size_t i = 0; i < n; ++i) {
-      uint32_t c = crc ^ b[i];
-      for (int k = 0; k < 8; ++k)
-        c = (c & 1) ? (0xEDB88320u ^ (c >> 1)) : (c >> 1);
-      crc = c ^ (crc >> 8);
-    }
-  }
-
-  return crc ^ 0xFFFFFFFFu;
-}
-
 // ====================== FS utils ======================
 static void ensure_dir(){ mkdir(WS_SAVE_DIR, 0777); }
-
-static const char* basename_ptr(const char* p){
-  if (!p) return nullptr;
-  const char* s = strrchr(p, '/'); if (s) return s+1;
-  s = strrchr(p, '\\'); if (s) return s+1;
-  return p;
-}
 
 static void make_save_path(const char* romPathOrName){
   ensure_dir();
 
-  const char* base = basename_ptr(romPathOrName);
+  const char* base = share::gameSaveBasename(romPathOrName);
   char name[160] = {0};
 
   if (base && *base){
@@ -106,32 +57,16 @@ static void make_save_path(const char* romPathOrName){
   }
 }
 
-static bool path_parent_ready(const char* fullpath){
-  if (!fullpath) return false;
-  struct stat st;
-  if (stat("/sd", &st)!=0) return false;
-  if (stat(WS_SAVE_DIR, &st)!=0){
-    if (mkdir(WS_SAVE_DIR, 0777)!=0) return false;
-  }
-  return true;
-}
-
-// 0 sauvegarder, 1 trivial
-static int sram_is_trivial(const uint8_t* p, size_t n){
-  if (!p || n==0) return 1;
-  size_t i=0; for(;i<n;i++) if(p[i]!=0xFF) break; if(i==n) return 1;
-  for(i=0;i<n;i++) if(p[i]!=0x00) break; if(i==n) return 1;
-  return 0;
-}
-
 // ====================== I/O ======================
-static void flush_now(){
-  if (!g_sram || !g_sram_len) return;
-  if (!path_parent_ready(g_save_path)) return;
-  if (sram_is_trivial(g_sram, g_sram_len)) return;
+static bool flush_now(){
+  if (!g_sram || !g_sram_len) return false;
+  if (!share::gameSaveEnsureParentReady(g_save_path)) return false;
+  if (share::gameSaveIsTrivialSram(g_sram, g_sram_len)) return false;
 
   FILE* f = fopen(g_save_path, "r+b");
-  if (!f) return;
+  if (!f) {
+    return false;
+  }
 
   const size_t CHUNK = 512;
   size_t remaining = g_sram_len;
@@ -143,7 +78,8 @@ static void flush_now(){
     if (w != n) {
       // erreur write
       fclose(f);
-      return;
+      printf("[WS][SAVE] write error saving %s\n", g_save_path);
+      return false;
     }
     src       += n;
     remaining -= n;
@@ -155,8 +91,11 @@ static void flush_now(){
 
   printf("[WS][SAVE] wrote %u bytes -> %s\n",
          (unsigned)g_sram_len, g_save_path);
+
+  return true;
 }
 
+// ====================== Task ======================
 static void SaveTask(void*){
   for(;;){
     ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(CHECK_MS));
@@ -165,16 +104,31 @@ static void SaveTask(void*){
     TickType_t now = xTaskGetTickCount();
 
     if (do_check && g_sram && g_sram_len){
-      uint32_t crc = crc32_update(0, g_sram, g_sram_len); // CRC zone utile
+      uint32_t crc = share::gameSaveCrc32Update(0, g_sram, g_sram_len); // CRC zone utile
       if (crc != g_crc_last && now >= g_next_allow){
         g_crc_last = crc;
-        if (!sram_is_trivial(g_sram, g_sram_len)) do_flush = true;
-        else printf("[WS][SAVE] trivial after change, skip\n");
+        if (!share::gameSaveIsTrivialSram(g_sram, g_sram_len)) {
+          // SRAM modified
+          share::setGameIsSaving(true);
+          do_flush = true;
+        } else {
+          printf("[WS][SAVE] trivial after change, skip\n");
+        }
       }
     }
+
     if (do_flush && now >= g_next_allow){
-      flush_now();
-      g_next_allow = xTaskGetTickCount() + pdMS_TO_TICKS(GAP_MS);
+      bool ok = flush_now();
+      if (ok) {
+        // OK
+        share::setGameIsSaving(false);
+        g_next_allow = xTaskGetTickCount() + pdMS_TO_TICKS(GAP_MS);
+      } else {
+        // Fail, don't delay next try, forcer redétection dirty
+        g_crc_last = 0xFFFFFFFFu;
+        printf("[WS][SAVE] save failed, will retry on next tick\n");
+        // gameIsSaving remains true
+      }
     }
   }
 }
@@ -224,7 +178,7 @@ void ws_save_init(const char* romPathOrName){
   // Construit chemin
   make_save_path(romPathOrName);
 
-  if (path_parent_ready(g_save_path)) {
+  if (share::gameSaveEnsureParentReady(g_save_path)) {
     FILE* f = fopen(g_save_path, "rb");
     if (!f) {
       f = fopen(g_save_path, "wb");
@@ -261,7 +215,7 @@ void ws_save_init(const char* romPathOrName){
   }
 
   // CRC initial
-  g_crc_last    = crc32_update(0, g_sram, g_sram_len);
+  g_crc_last    = share::gameSaveCrc32Update(0, g_sram, g_sram_len);
   g_next_check  = 0;
   g_next_allow  = 0;
   g_first_dirty = 0;
@@ -289,7 +243,7 @@ void ws_save_init(const char* romPathOrName){
 
 void ws_save_load(void){
   if (!g_sram || !g_sram_len) return;
-  if (!path_parent_ready(g_save_path)) {
+  if (!share::gameSaveEnsureParentReady(g_save_path)) {
     printf("[WS][SAVE] skip load (storage not ready)\n");
     return;
   }
@@ -307,7 +261,7 @@ void ws_save_load(void){
       printf("[WS][SAVE] promoted temp -> sav: %s\n", g_save_path);
       f = fopen(g_save_path, "rb"); // rouvre le .sav
     } else {
-      // lire directement le .tmp
+      // lire .tmp
       f = fopen(tmp_path, "rb");
       if (f) {
         printf("[WS][SAVE] loading from temp (rename failed)\n");
@@ -334,7 +288,7 @@ void ws_save_load(void){
 
   if (remaining) memset(dst, 0xFF, remaining);
 
-  g_crc_last = crc32_update(0, g_sram, g_sram_len);
+  g_crc_last = share::gameSaveCrc32Update(0, g_sram, g_sram_len);
   printf("[WS][SAVE] loaded %u/%u from %s\n",
          (unsigned)(g_sram_len - remaining), (unsigned)g_sram_len, g_save_path);
 }

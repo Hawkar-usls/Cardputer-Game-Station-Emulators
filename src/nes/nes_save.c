@@ -22,8 +22,8 @@ static TickType_t g_next_allowed_write = 0;
 static char       g_rompath_for_saves[PATH_MAX] = {0};
 
 #define SRAM_CHECK_PERIOD_MS   250   /* Check period */
-#define SRAM_DEBOUNCE_MS       2000  /* Wait after last change */
-#define SRAM_MIN_WRITE_GAP_MS  5000  /* Min time between 2 writes */
+#define SRAM_DEBOUNCE_MS       500  /* Wait after last change */
+#define SRAM_MIN_WRITE_GAP_MS  15000  /* Min time between 2 writes */
 
 /* CRC32 standard */
 static uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len)
@@ -78,9 +78,9 @@ static void make_tmp_path(char *dst, size_t dstlen, const char *final_path)
     dst[dstlen - 1] = '\0';
 }
 
-static void sram_autosave_flush(void)
+static bool sram_autosave_flush(void)
 {
-    if (!g_sram_ptr || g_sram_len == 0) return;
+    if (!g_sram_ptr || g_sram_len == 0) return false;
 
     // Make paths
     char path[PATH_MAX];
@@ -93,7 +93,7 @@ static void sram_autosave_flush(void)
     FILE *f = fopen(tmp, "wb");
     if (!f) {
         nofrendo_log_printf("SRAM autosave: fopen tmp fail (%s)\n", tmp);
-        return;
+        return false;
     }
     
     // Write SRAM to temp file
@@ -107,18 +107,19 @@ static void sram_autosave_flush(void)
         nofrendo_log_printf("SRAM autosave: short write %u/%u to %s\n",
                             (unsigned)w, (unsigned)g_sram_len, tmp);
         // something wrong, keep temp file for inspection
-        return;
+        return false;
     }
 
     // Replace old save with new one
     unlink(path);
     if (rename(tmp, path) != 0) {
         nofrendo_log_printf("SRAM autosave: rename failed %s -> %s\n", tmp, path);
-        return;
+        return false;
     }
 
     nofrendo_log_printf("SRAM autosave: wrote %u/%u bytes -> %s\n",
                         (unsigned)w, (unsigned)g_sram_len, path);
+    return true;
 }
 
 /* called by nes_rom.c after alloc/load SRAM, and before free (with ptr=NULL) */
@@ -159,8 +160,13 @@ void sram_autosave_tick(void)
     /* flush if stable since debounce, and gap respected */
     if (g_dirty_deadline && now >= g_dirty_deadline) {
         if (now >= g_next_allowed_write) {
-            sram_autosave_flush();
-            g_next_allowed_write = now + pdMS_TO_TICKS(SRAM_MIN_WRITE_GAP_MS);
+            bool ok = sram_autosave_flush();
+            if (ok) {
+                g_next_allowed_write = now + pdMS_TO_TICKS(SRAM_MIN_WRITE_GAP_MS);
+            } else {
+                g_crc_last = 0xFFFFFFFFu;
+                nofrendo_log_printf("SRAM autosave: flush failed, will retry soon\n");
+            }
         }
         g_dirty_deadline = 0;
     }
@@ -168,7 +174,7 @@ void sram_autosave_tick(void)
 
 void sram_autosave_force_flush(void)
 {
-    sram_autosave_flush();
+    (void)sram_autosave_flush();
 }
 
 static int path_is_xip_mount(const char *p) { 
