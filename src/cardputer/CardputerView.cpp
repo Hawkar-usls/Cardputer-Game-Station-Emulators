@@ -94,11 +94,13 @@ void CardputerView::welcome() {
     Display->pushImage(0, 0, BGGAMESTATION_S_WIDTH, BGGAMESTATION_S_HEIGHT, bggamestation_s);
    
     // Title
-    std::string title = "Game Station 0.6";
+    std::string title = "Game Station 0.7";
     Display->setTextColor(TEXT_COLOR);
     Display->setTextSize(TEXT_BIG);
     Display->setCursor(getCenterOffset(title), 65);
     Display->printf("%s", title.c_str());
+
+    Display->setSwapBytes(false);
 }
 
 void CardputerView::topBar(const std::string& title, bool submenu, bool searchBar) {
@@ -864,13 +866,13 @@ uint16_t CardputerView::colorForExt(const std::string& extRaw) const {
     if (ext == ".md") return GENESIS_COLOR;
     if (ext == ".ws" || ext == ".wsc") return WS_COLOR;
     if (ext == ".pce") return PCE_COLOR;
+    if (ext == ".gb" || ext == ".gbc") return GAMEBOY_COLOR;
 
     return TEXT_COLOR;
 }
 
-void CardputerView::showValidExt(const std::vector<std::string>& exts,
-                                 const char* title) {
-    clearMainView(5);
+void CardputerView::showValidExt(const std::vector<std::string>& exts) {
+       clearMainView(5);
 
     // Cadre 
     const int boxX = 10, boxY = 35;
@@ -880,20 +882,16 @@ void CardputerView::showValidExt(const std::vector<std::string>& exts,
     Display->fillRoundRect(boxX, boxY, boxW, boxH, DEFAULT_ROUND_RECT, RECT_COLOR_DARK);
     Display->drawRoundRect(boxX, boxY, boxW, boxH, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
 
-    // Titre
-    Display->setTextSize(TEXT_WIDE);
-    Display->setTextColor(PRIMARY_COLOR);
-    const std::string titleStr = (title && *title) ? title : "Supported files";
-    Display->drawCenterString(titleStr.c_str(), Display->width() / 2, boxY + 10);
+    // --- PLUS DE TITRE ---  
+    // On commence directement les badges en haut du cadre.
+    int cursorY = boxY + 12;   // AVANT 30 → maintenant beaucoup plus haut
 
-    // Badges
-    const int innerPad = 10;                 // padding interne gauche/droite
-    const int innerW   = boxW - innerPad*2;  // largeur utile pour le wrap
-    int cursorY = boxY + 30;
+    // Badges layout
+    const int innerPad = 10;
+    const int innerW   = boxW - innerPad*2;
 
-    // Style des badges
-    const int badgeHPadding = 8;   // padding horizontal
-    const int badgeVPadding = 3;   // padding vertical
+    const int badgeHPadding = 8;
+    const int badgeVPadding = 3;
     const int badgeRadius   = DEFAULT_ROUND_RECT;
     const int rowGap        = 6;
     const int colGap        = 6;
@@ -901,79 +899,80 @@ void CardputerView::showValidExt(const std::vector<std::string>& exts,
     Display->setTextSize(TEXT_MEDIUM);
     Display->setTextColor(TEXT_COLOR);
 
-    // Construire lignes
     struct Badge { std::string raw; std::string txt; int w; int h; };
+
     std::vector<std::vector<Badge>> rows;
     std::vector<Badge> current;
 
-    int currentRowWidth = 0;
+    int currentRowWidth  = 0;
     int currentRowHeight = 0;
 
+    // Construction des lignes (wrap)
     for (const auto& raw : exts) {
-        // Texte
         std::string txt = raw;
         for (auto& c : txt) c = (char)std::toupper((unsigned char)c);
 
-        // Dimensions
         int textW  = Display->textWidth(txt.c_str());
         int textH  = Display->fontHeight();
         int badgeW = textW + badgeHPadding * 2;
         int badgeH = textH + badgeVPadding * 2;
 
-        // Largeur
         int sep   = current.empty() ? 0 : colGap;
         int nextW = currentRowWidth + sep + badgeW;
 
         if (nextW > innerW && !current.empty()) {
             rows.push_back(current);
             current.clear();
-            currentRowWidth = 0;
+            currentRowWidth  = 0;
             currentRowHeight = 0;
-            sep = 0; // pas d'espace
+            sep = 0;
         }
 
         current.push_back(Badge{raw, txt, badgeW, badgeH});
         currentRowWidth  += sep + badgeW;
         currentRowHeight = std::max(currentRowHeight, badgeH);
     }
-    if (!current.empty()) rows.push_back(current);
 
-    // Rendu des lignes
+    if (!current.empty())
+        rows.push_back(current);
+
+    // --- Rendu : MAX 3 lignes ---  
+    int renderedRows = 0;
+
     for (const auto& row : rows) {
+        if (renderedRows >= 3) break;
+
         int rowWidth = 0;
         for (size_t i = 0; i < row.size(); ++i) {
             rowWidth += row[i].w;
             if (i + 1 < row.size()) rowWidth += colGap;
         }
 
-        int startX = boxX + (boxW - rowWidth) / 2;  // centrage
+        int startX = boxX + (boxW - rowWidth) / 2;
         int x = startX;
 
-        // Hauteur 
         int lineH = 0;
         for (const auto& b : row) lineH = std::max(lineH, b.h);
 
-        // Stop si hors box
-        if (cursorY + lineH > boxY + boxH - 8) break;
+        // Stop si dépasse — mais maintenant on a largement la place
+        if (cursorY + lineH > boxY + boxH - 18) break;
 
-        // Dessin des badges
+        // Dessin badges
         for (size_t i = 0; i < row.size(); ++i) {
             const auto& b = row[i];
 
-            // Couleurs
             uint16_t accent = colorForExt(b.raw);
             uint16_t fill   = RECT_COLOR_DARK;
             uint16_t stroke = (accent == TEXT_COLOR) ? PRIMARY_COLOR : accent;
 
-            // Badge
             Display->fillRoundRect(x, cursorY, b.w, b.h, badgeRadius, fill);
             Display->drawRoundRect(x, cursorY, b.w, b.h, badgeRadius, stroke);
 
-            // Texte
             int textW = Display->textWidth(b.txt.c_str());
             int textH = Display->fontHeight();
             int textX = x + (b.w - textW) / 2;
             int textY = cursorY + (b.h - textH) / 2 + textH - 4;
+
             Display->setTextColor(TEXT_COLOR);
             Display->setCursor(textX, textY);
             Display->printf("%s", b.txt.c_str());
@@ -983,16 +982,88 @@ void CardputerView::showValidExt(const std::vector<std::string>& exts,
         }
 
         cursorY += lineH + rowGap;
+        renderedRows++;
     }
 
     // Mention bas
     Display->setTextSize(TEXT_SMALL);
     Display->setTextColor(PRIMARY_COLOR);
-    std::string hint = "Press any key to continue";
-    Display->drawCenterString(hint.c_str(), Display->width() / 2, boxY + boxH - 14);
+    Display->drawCenterString("Press any key to continue",
+                              Display->width() / 2,
+                              boxY + boxH - 14);
 
-    // Reset style
+    // Reset
     Display->setTextSize(TEXT_MEDIUM);
     Display->setTextColor(TEXT_COLOR);
 }
 
+void CardputerView::copyProgress(size_t total, size_t current, void* userCtx) {
+    if (!Display) return;
+
+    static uint32_t lastDraw = 0;
+    static bool initialized = false;
+    static int lastFilledW = 0;
+
+    uint32_t now = millis();
+    if (now - lastDraw < 50 && current != total) return;
+    lastDraw = now;
+
+    float ratio = (total > 0 ? (float)current / (float)total : 0.0f);
+    if (ratio < 0) ratio = 0;
+    if (ratio > 1) ratio = 1;
+
+    // Cadre
+    const int boxX = 10;
+    const int boxY = 35;
+    const int boxW = Display->width() - 20;
+    const int boxH = 90;
+
+    // Barre
+    const int barH = 18;
+    const int barW = boxW - 40;
+    const int barX = boxX + (boxW - barW) / 2;
+    const int barY = boxY + (boxH - barH) / 2;
+
+    // Texte taille
+    const int sizeY = boxY + boxH - 18;
+    char sizeStr[32];
+    snprintf(sizeStr, sizeof(sizeStr), "%.0f KB", total / 1024.0f);
+
+    // init
+    if (!initialized || current == 0) {
+        initialized = true;
+        lastFilledW = 0;
+
+        Display->fillRect(
+            0,
+            TOP_BAR_HEIGHT,
+            Display->width(),
+            Display->height(),
+            BACKGROUND_COLOR
+        );
+
+        // Cadre
+        Display->fillRoundRect(boxX, boxY, boxW, boxH, DEFAULT_ROUND_RECT, RECT_COLOR_DARK);
+        Display->drawRoundRect(boxX, boxY, boxW, boxH, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
+
+        // Titre
+        Display->setTextSize(TEXT_WIDE);
+        Display->setTextColor(PRIMARY_COLOR);
+        Display->drawCenterString("Writing ROM...", Display->width() / 2, boxY + 16);
+
+        // Fond barre
+        Display->fillRoundRect(barX, barY, barW, barH, DEFAULT_ROUND_RECT, RECT_COLOR_DARK);
+
+        // Taille
+        Display->setTextSize(TEXT_SMALL);
+        Display->setTextColor(TEXT_COLOR);
+        Display->drawCenterString(sizeStr, Display->width() / 2, sizeY);
+    }
+
+    // Only delta
+    int filledW = (int)(barW * ratio);
+    if (filledW > lastFilledW) {
+        Display->fillRect(barX + lastFilledW, barY, filledW - lastFilledW, barH, PRIMARY_COLOR);
+        lastFilledW = filledW;
+    }
+}

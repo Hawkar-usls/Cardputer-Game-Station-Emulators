@@ -24,6 +24,7 @@
 #define NEOGEO_COLOR   0x05E8 // Vert (≈ #2a9333ff)
 #define WS_COLOR       0x07FF  // Cyan (≈ #00FFFF)
 #define PCE_COLOR      0xE81A
+#define GAMEBOY_COLOR  0xFCD3
 #define FOLDER_COLOR   0xFEC0  // Jaune pâle (≈ #F6EB61)
 
 // TEXT SIZE
@@ -65,8 +66,8 @@ public:
     void drawMinusIcon(int x=120, int y=47, uint16_t color = PRIMARY_COLOR);
     void drawLockIcon(int x=120, int y=78, uint16_t color = PRIMARY_COLOR, size_t w=60, size_t h=45);
     void drawSelectedRowMarquee(const std::string& text, uint16_t rowInPage, size_t visibleRows);
-    void showValidExt(const std::vector<std::string>& exts,
-                        const char* title = "Supported files");
+    void showValidExt(const std::vector<std::string>& exts);
+    static void copyProgress(size_t total, size_t current, void* userCtx = nullptr);
 private:
     static M5GFX* Display; 
     void drawRect(bool selected, uint8_t margin, uint16_t startY, uint16_t sizeX, uint16_t sizeY, uint16_t stepY);
