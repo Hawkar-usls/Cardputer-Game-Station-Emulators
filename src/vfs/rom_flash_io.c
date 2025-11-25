@@ -5,6 +5,7 @@
 #include <string.h>
 #include "esp_spi_flash.h"
 
+
 const esp_partition_t* findRomPartition(const char* name) {
   esp_vfs_spiffs_unregister(NULL);
   if (!name) name = "spiffs";
@@ -22,7 +23,13 @@ bool eraseRomPartition(const esp_partition_t* part, size_t bytes_to_write) {
   return (err == ESP_OK);
 }
 
-bool copyFileToPartition(const char* srcPath, const esp_partition_t* part, size_t* outSize) {
+bool copyFileToPartition(
+    const char* srcPath,
+    const esp_partition_t* part,
+    size_t* outSize,
+    CopyProgressCallback progressCb,
+    void* progressCtx
+) {
   if (outSize) *outSize = 0;
   if (!srcPath || !part) return false;
 
@@ -33,28 +40,61 @@ bool copyFileToPartition(const char* srcPath, const esp_partition_t* part, size_
   long fsz = ftell(f);
   if (fsz <= 0) { fclose(f); return false; }
   if (fseek(f, 0, SEEK_SET) != 0) { fclose(f); return false; }
-  if ((size_t)fsz > part->size) { fclose(f); return false; }
 
-  if (!eraseRomPartition(part, (size_t)fsz)) { fclose(f); return false; }
+  size_t totalSize = (size_t)fsz;
+
+  if (totalSize > part->size) {
+    fclose(f);
+    return false;
+  }
+
+  if (!eraseRomPartition(part, totalSize)) {
+    fclose(f);
+    return false;
+  }
 
   uint8_t* buf = (uint8_t*)malloc(8192);
-  if (!buf) { fclose(f); return false; }
+  if (!buf) {
+    fclose(f);
+    return false;
+  }
 
   size_t written = 0;
-  while (written < (size_t)fsz) {
-    size_t toRead = (size_t)fsz - written;
+
+  // init first
+  if (progressCb) {
+    progressCb(totalSize, written, progressCtx);
+  }
+
+  while (written < totalSize) {
+    size_t toRead = totalSize - written;
     if (toRead > 8192) toRead = 8192;
+
     size_t r = fread(buf, 1, toRead, f);
-    if (r == 0) { free(buf); fclose(f); return false; }
+    if (r == 0) {
+      free(buf);
+      fclose(f);
+      return false;
+    }
 
     esp_err_t err = esp_partition_write(part, written, buf, r);
-    if (err != ESP_OK) { free(buf); fclose(f); return false; }
+    if (err != ESP_OK) {
+      free(buf);
+      fclose(f);
+      return false;
+    }
 
     written += r;
+
+    // Callback 
+    if (progressCb) {
+      progressCb(totalSize, written, progressCtx);
+    }
   }
 
   free(buf);
   fclose(f);
+
   if (outSize) *outSize = written;
   return true;
 }
