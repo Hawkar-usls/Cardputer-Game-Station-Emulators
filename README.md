@@ -5,22 +5,21 @@
 ![NGP emulator screen captures on the M5Stack Cardputer](ngp_emulator_s.jpg)
 ![Megadrive emulator screen captures on the M5Stack Cardputer](megadrive_emulator_s.jpg)
 
-Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), **Smsplus**, [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan) and **PCE-GO** 
-
-**Running on the M5Stack Cardputer**, with sound, video, game save, and controls.
+Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), **Smsplus**, [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan) and **PCE-GO**. All cores were modified to run using **less than 256 KB of RAM**.
 
  Console           | Sound | Video | Save | Speed | All Games  | Notes |
 |-------------------|--------|--------|---------------|-------------|-------------------|--------|
 | **NES**           | ✅ | ✅ | ✅ | ✅ | ✅ | Few mappers issues in some games |
+| **Game Boy**      | ✅ | ✅ | ✅ | ✅ | ✅ | Fully compatible, Mono/Color support |
 | **Master System** | ✅ | ✅ | ✅ | ✅ | ✅ | Fully compatible |
 | **Game Gear**     | ✅ | ✅ | ✅ | ✅ | ✅ | Fully compatible |
 | **PC Engine**     | ✅ | ✅ | ⚠️ | ✅ | ✅ | Fully compatible |
 | **Mega Drive**    | ✅ | ✅ | ⚠️ | ✅ | ✅ | Some slowdown and not accurate sound in heavy titles |
-| **Neo Geo Pocket**| ✅ | ✅ | ⚠️ | ✅ | ✅| Some slowdown in heavy titles |
-| **WonderSwan**    | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | No support for SRAM >32KB, not fullspeed (75FPS) in most games  |
+| **Neo Geo Pocket**| ✅ | ✅ | ⚠️ | ✅ | ✅ | Mono/color support. Some slowdown in heavy titles |
+| **WonderSwan**    | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | Mono/color support, not fullspeed (75FPS) in most games  |
 
 
-It runs **`.nes` `.sms` `.gg`  `.md` `.ngc` `.ngp` `.ws` `.wsc` `.pce` ROM files directly from the SD**.
+It runs **`.nes` `.gb` `.gbc` `.sms` `.gg`  `.md` `.ngc` `.ngp` `.ws` `.wsc` `.pce` ROM files directly from the SD**.
 
 > **Make sure your ROMs are uncompressed** (not .zip, .7z, or .rar).
 
@@ -43,9 +42,11 @@ The built-in **Cardputer keyboard** is used for all controls:
 | 🔊 Volume + | **+** | Increase audio volume |
 | 🔊 Volume − | **-** | Decrease audio volume |
 | 🖥️ Screen Mode | **\\** | Toggle screen display mode |
+| 🔍 Zoom − | **Fn + ←** | Zoom out |
+| 🔍 Zoom + | **Fn + →**| Zoom in |
 | 🔘 Quit Game | **G0 (hold 1 s)** | Go back to menu |
 
-**Note:** `fn` + `arrows` keys are also binded for zoom/sound controls. The `j` key is also bound as Button A to allow an alternative layout for player preference.
+The `j` key is also bound as Button A to allow an alternative layout for player preference.
 
 ## Zoom Mode
 
@@ -63,8 +64,24 @@ You can precisely adjust the display zoom level with `fn` + `arrows left/right`.
 
 ## About Games
 
-You can place the **ROM uncompressed files** anywhere on your SD card and select them. **Avoid having folders with more than 512 items** to prevent loading times.
+You can place the **ROM uncompressed files** anywhere on your SD card and select them. **Avoid having folders with more than 512 items** to prevent loading times. The firmware allows running ROMs up to 6 MB.
 
 When browsing your game list, you can **type the first few letters of a game’s name** to jump directly to it. This makes it much faster to find a specific title, especially when your library contains dozens of entries. You should **avoid game titles longer than 64 characters**.
 
-ROMs **up to 5MB can be played when flashing the firmware directly** (which covers 99.9% of all games), if you're using the [Launcher](https://github.com/bmorcelli/Launcher), it is limited to 1 MB.
+## About Saves
+
+Save files are created automatically and organized into separate folders per console on your SD card. **Each save is linked to the game’s filename**.
+
+**⚠️ Important: The autosave system writes to the SD card in the background at regular intervals.**
+
+The chance of corrupting a save by resetting the device exactly at the moment a write occurs is low. However, to completely eliminate this risk, it is recommended to exit games properly.
+
+Hold the **GO button for 1 second to quit safely** and ensure no save corruption.
+
+## Launcher
+
+For [Launcher](https://github.com/bmorcelli/Launcher)'s users, you can now use the **“Game Station” partition** scheme to load ROMs larger than 1MB.
+
+> In the Launcher main menu, Go to **CFG → Partition Change, and select Game Station.**
+
+The launcher will reboot automatically, and after that you can run larger ROMs (up to 4.5MB).
