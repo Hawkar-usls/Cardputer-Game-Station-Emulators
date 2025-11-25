@@ -75,9 +75,8 @@ typedef void (*ppuvromswitch_t)(uint8 value);
 
 typedef struct ppu_s
 {
-   /* big nasty memory chunks */
-   uint8 nametab[0x1000];
-   uint8 oam[256];
+   uint8 *nametab;
+   uint8 *oam;
    uint8 palette[32];
    uint8 *page[16];
 
@@ -105,7 +104,7 @@ typedef struct ppu_s
    ppuvromswitch_t vromswitch;
 
    /* copy of our current palette */
-   rgb_t curpal[256];
+   rgb_t *curpal;
 
    bool vram_accessible;
 
@@ -154,6 +153,7 @@ extern void ppu_dumppattern(bitmap_t *bmp, int table_num, int x_loc, int y_loc, 
 extern void ppu_dumpoam(bitmap_t *bmp, int x_loc, int y_loc);
 extern void ppu_displaysprites(bool display);
 
+extern void ppu_init(void);
 #endif /* _NES_PPU_H_ */
 
 /*

@@ -135,6 +135,31 @@ ppu_t *ppu_create(void)
    temp->vram_present = false;
    temp->drawsprites = true;
 
+   /* allocation nametab (4 KB) */
+   temp->nametab = NOFRENDO_MALLOC(0x1000);
+   if (NULL == temp->nametab)
+   {
+      NOFRENDO_FREE(temp);
+      return NULL;
+   }
+
+    /* allocation OAM  */
+   temp->oam = NOFRENDO_MALLOC(256);
+   if (NULL == temp->oam)
+   {
+      NOFRENDO_FREE(temp->nametab);
+      NOFRENDO_FREE(temp);
+      return NULL;
+   }
+
+   /* allocation curpal*/
+   temp->curpal = NOFRENDO_MALLOC(sizeof(rgb_t) * 256);
+   if (NULL == temp->curpal)
+   {
+      NOFRENDO_FREE(temp);
+      return NULL;
+   }
+
    /* TODO: probably a better way to do this... */
    if (false == pal_generated)
    {
