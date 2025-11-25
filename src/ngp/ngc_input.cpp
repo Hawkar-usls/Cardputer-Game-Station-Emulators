@@ -2,6 +2,7 @@
 #include <M5Cardputer.h>
 #include <Arduino.h>
 #include "race/input.h"
+#include "share/input.h"
 
 #ifndef NGP_INPUT_ACTIVE_LOW
 #define NGP_INPUT_ACTIVE_LOW 0
@@ -30,10 +31,7 @@ extern "C" uint32_t ngc_input_poll(void) {
   M5Cardputer.update();
   Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
-  if (M5Cardputer.BtnA.pressedFor(1000)) {
-    esp_sleep_enable_timer_wakeup(1000);
-    esp_deep_sleep_start();
-  }
+  share::checkCommonInput(ks);
 
   // --- state de base ---
 #if NGP_INPUT_ACTIVE_LOW
@@ -110,26 +108,6 @@ extern "C" uint32_t ngc_input_poll(void) {
   if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(',')) {
     if (!ngpFullscreen) ngpFullscreen = true;
     ngpZoomPercent = (ngpZoomPercent > 100) ? (ngpZoomPercent - 1) : 100;
-    return dummy_ret;
-  }
-
-  // Volume
-  if (M5Cardputer.Keyboard.isKeyPressed('=') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed(';'))) {
-    M5Cardputer.Speaker.setVolume(min(M5Cardputer.Speaker.getVolume() + 3, 255));
-    return dummy_ret;
-  }
-  if (M5Cardputer.Keyboard.isKeyPressed('-') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed('.'))) {
-    M5Cardputer.Speaker.setVolume(max(M5Cardputer.Speaker.getVolume() - 3, 0));
-    return dummy_ret;
-  }
-
-  // Luminosity
-  if (M5Cardputer.Keyboard.isKeyPressed(']')) {
-    M5Cardputer.Display.setBrightness(min(M5Cardputer.Display.getBrightness() + 2, 255));
-    return dummy_ret;
-  }
-  if (M5Cardputer.Keyboard.isKeyPressed('[') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed(','))) {
-    M5Cardputer.Display.setBrightness(max(M5Cardputer.Display.getBrightness() - 2, 0));
     return dummy_ret;
   }
 

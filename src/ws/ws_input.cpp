@@ -2,6 +2,7 @@
 #include <M5Cardputer.h>
 #include <stdint.h>
 #include "ws_input.h"
+#include "share/input.h"
 
 extern bool ws_fullscreen;
 extern int  ws_zoomPercent;
@@ -12,11 +13,7 @@ extern "C" int ws_input_poll(int mode)
   Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
   uint16_t state = 0;
 
-  // Quit
-  if (M5Cardputer.BtnA.pressedFor(1000)) {
-    esp_sleep_enable_timer_wakeup(1000);
-    esp_deep_sleep_start();
-  }
+  share::checkCommonInput(status);
 
   // Directional pad
   const bool left  = M5Cardputer.Keyboard.isKeyPressed('e');
@@ -64,18 +61,6 @@ extern "C" int ws_input_poll(int mode)
 
   if (M5Cardputer.Keyboard.isKeyPressed('1')) state |= WS_START;  // START 
   if (M5Cardputer.Keyboard.isKeyPressed('2'))  state |= WS_OPTION; // OPTION 
-
-  // Volume +/-
-  if (M5Cardputer.Keyboard.isKeyPressed('='))
-    M5Cardputer.Speaker.setVolume(min(M5Cardputer.Speaker.getVolume() + 3, 255));
-  if (M5Cardputer.Keyboard.isKeyPressed('-'))
-    M5Cardputer.Speaker.setVolume(max(M5Cardputer.Speaker.getVolume() - 3, 0));
-
-  // Luminosity +/-
-  if (M5Cardputer.Keyboard.isKeyPressed(']'))
-    M5Cardputer.Display.setBrightness(min(M5Cardputer.Display.getBrightness() + 2, 255));
-  if (M5Cardputer.Keyboard.isKeyPressed('['))
-    M5Cardputer.Display.setBrightness(max(M5Cardputer.Display.getBrightness() - 2, 0));
 
   // Zoom / fullscreen toggle
   if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed('\\')) {
