@@ -1,6 +1,7 @@
 #include "input.h"
 #include <algorithm>
 #include <M5Cardputer.h>
+#include "share/input.h"
 
 extern bool fullscreen;
 extern bool scanline;
@@ -21,41 +22,7 @@ void cardputer_read_input(bool isGG) {
     M5Cardputer.update();
     Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 
-    // Bouton GO
-    if (M5Cardputer.BtnA.pressedFor(1000)) {
-        // use as a hack to quit the game
-        esp_sleep_enable_timer_wakeup(1000); // 1ms
-        esp_deep_sleep_start();    
-    }
-
-    // Volume +
-    if (key('=') || (status.fn && key(';'))) {
-        int v = M5Cardputer.Speaker.getVolume();
-        M5Cardputer.Speaker.setVolume(std::min(v + 3, 255));
-        input.pad[0] = 0; input.system = 0;
-        return;
-    }
-    // Volume -
-    if (key('-') || (status.fn && key('.'))) {
-        int v = M5Cardputer.Speaker.getVolume();
-        M5Cardputer.Speaker.setVolume(std::max(v - 3, 0));
-        input.pad[0] = 0; input.system = 0;
-        return;
-    }
-    // Bright +
-    if (key(']')) {
-        int b = M5Cardputer.Display.getBrightness();
-        M5Cardputer.Display.setBrightness(std::min(b + 2, 255));
-        input.pad[0] = 0; input.system = 0;
-        return;
-    }
-    // Bright -
-    if (key('[')) {
-        int b = M5Cardputer.Display.getBrightness();
-        M5Cardputer.Display.setBrightness(std::max(b - 2, 0));
-        input.pad[0] = 0; input.system = 0;
-        return;
-    }
+    share::checkCommonInput(status);
 
     // --- fullscreen / zoom cycle ---
     if (M5Cardputer.Keyboard.isChange() && key('\\')) {

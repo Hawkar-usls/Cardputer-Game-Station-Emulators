@@ -1,7 +1,11 @@
 #include "genesis_input.h"
+#include "share/input.h"
 
 #include <M5Cardputer.h>
 #include <Arduino.h>
+
+static uint32_t s_lastCommonInputMs = 0;
+static const uint32_t COMMON_INPUT_PERIOD_MS = 10;
 
 extern "C" {
   // Gwenesis APIs 
@@ -38,10 +42,10 @@ extern "C" void genesis_controller_poll() {
   M5Cardputer.update();
   Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
-  // Quit
-  if (M5Cardputer.BtnA.pressedFor(1000)) {
-    esp_sleep_enable_timer_wakeup(1000); // 1 ms
-    esp_deep_sleep_start();
+  uint32_t now = millis();
+  if (now - s_lastCommonInputMs >= COMMON_INPUT_PERIOD_MS) {
+    s_lastCommonInputMs = now;
+    share::checkCommonInput(ks);
   }
 
   // Screen mode toggle with '\'
@@ -70,28 +74,6 @@ extern "C" void genesis_controller_poll() {
     if (!fullscreenMode) fullscreenMode = true;
     genesisZoomPercent -= 1;
     if (genesisZoomPercent < 100) genesisZoomPercent = 100;
-    return;
-  }
-
-  // Volume +/−
-  if (M5Cardputer.Keyboard.isKeyPressed('=') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed(';'))) {
-    genesis_audio_volume = min(genesis_audio_volume + 1, 255);
-    M5Cardputer.Speaker.setVolume(genesis_audio_volume);
-    return;
-  }
-  if (M5Cardputer.Keyboard.isKeyPressed('-') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed('.'))) {
-    genesis_audio_volume = max(genesis_audio_volume - 1, 0);
-    M5Cardputer.Speaker.setVolume(genesis_audio_volume);
-    return;
-  }
-
-  // Luminosity +/−
-  if (M5Cardputer.Keyboard.isKeyPressed(']')) {
-    M5Cardputer.Display.setBrightness(min(M5Cardputer.Display.getBrightness() + 1, 255));
-    return;
-  }
-  if (M5Cardputer.Keyboard.isKeyPressed('[') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed(','))) {
-    M5Cardputer.Display.setBrightness(max(M5Cardputer.Display.getBrightness() - 1, 0));
     return;
   }
 

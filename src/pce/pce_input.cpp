@@ -1,6 +1,7 @@
 #include "pce_input.h"
 
 #include <M5Cardputer.h>
+#include "share/input.h"
 
 extern "C" {
   #include "pce-go/pce.h" 
@@ -20,12 +21,7 @@ void pce_input_read(uint8_t joypads[8])
   M5Cardputer.update();
   Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 
-  //  Quit
-  if (M5Cardputer.BtnA.pressedFor(1000)) {
-    esp_sleep_enable_timer_wakeup(1000); // 1 ms
-    esp_deep_sleep_start();
-  }
-
+  share::checkCommonInput(status);
 
   // Toggle / fullscreen
   if (M5Cardputer.Keyboard.isChange() &&
@@ -59,50 +55,6 @@ void pce_input_read(uint8_t joypads[8])
     if (!pceFullScreen) pceFullScreen = true;
     pceZoomLevel -= 1;
     if (pceZoomLevel < 100) pceZoomLevel = 100;
-    joypads[0] = 0;
-    return;
-  }
-
-  // ====== VOLUME ======
-
-  // Volume up
-  if (M5Cardputer.Keyboard.isKeyPressed('=') ||
-      (status.fn && M5Cardputer.Keyboard.isKeyPressed(';'))) {
-
-    M5Cardputer.Speaker.setVolume(
-      std::min<int>(M5Cardputer.Speaker.getVolume() + 3, 255)
-    );
-    joypads[0] = 0;
-    return;
-  }
-
-  // Volume down
-  if (M5Cardputer.Keyboard.isKeyPressed('-') ||
-      (status.fn && M5Cardputer.Keyboard.isKeyPressed('.'))) {
-
-    M5Cardputer.Speaker.setVolume(
-      std::max<int>(M5Cardputer.Speaker.getVolume() - 3, 0)
-    );
-    joypads[0] = 0;
-    return;
-  }
-
-  // Brightness up
-  if (M5Cardputer.Keyboard.isKeyPressed(']')) {
-    M5Cardputer.Display.setBrightness(
-      std::min<int>(M5Cardputer.Display.getBrightness() + 2, 255)
-    );
-    joypads[0] = 0;
-    return;
-  }
-
-  // Brightness down
-  if (M5Cardputer.Keyboard.isKeyPressed('[') ||
-      (status.fn && M5Cardputer.Keyboard.isKeyPressed(','))) {
-
-    M5Cardputer.Display.setBrightness(
-      std::max<int>(M5Cardputer.Display.getBrightness() - 2, 0)
-    );
     joypads[0] = 0;
     return;
   }

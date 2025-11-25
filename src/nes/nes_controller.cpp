@@ -1,4 +1,5 @@
 #include <M5Cardputer.h>
+#include "share/input.h"
 
 extern bool fullscreenMode;
 extern int nesZoomPercent;
@@ -15,12 +16,8 @@ uint32_t controller_read_input() {
     M5Cardputer.update();
     Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 
-    if (M5Cardputer.BtnA.pressedFor(1000)) {
-        // use as a hack to quit the game
-        esp_sleep_enable_timer_wakeup(1000); // 1ms
-        esp_deep_sleep_start();    
-    }
-
+    share::checkCommonInput(status);
+    
     // Zoom control and screen mode toggle
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed('\\')) {
         if (!fullscreenMode) {
@@ -49,28 +46,6 @@ uint32_t controller_read_input() {
         if (!fullscreenMode) fullscreenMode = true;
         nesZoomPercent-= 1;
         if (nesZoomPercent < 100) nesZoomPercent = 100;
-        return value;
-    }
-
-    // Volume up
-    if (M5Cardputer.Keyboard.isKeyPressed('=') || (status.fn && M5Cardputer.Keyboard.isKeyPressed(';'))) {
-        M5Cardputer.Speaker.setVolume(min(M5Cardputer.Speaker.getVolume() + 3, 255)); // volume up
-        return value;
-    }
-
-    // Volume down
-    if (M5Cardputer.Keyboard.isKeyPressed('-') || (status.fn && M5Cardputer.Keyboard.isKeyPressed('.'))) {
-        M5Cardputer.Speaker.setVolume(max(M5Cardputer.Speaker.getVolume() - 3, 0)); // volume down
-        return value;
-    }
-
-    // Brightness control
-    if (M5Cardputer.Keyboard.isKeyPressed(']')) {
-        M5Cardputer.Display.setBrightness(min(M5Cardputer.Display.getBrightness() + 2, 255)); // brightness up
-        return value;
-    }
-    if (M5Cardputer.Keyboard.isKeyPressed('[') || (status.fn && M5Cardputer.Keyboard.isKeyPressed(','))) {
-        M5Cardputer.Display.setBrightness(max(M5Cardputer.Display.getBrightness() - 2, 0)); // brightness down
         return value;
     }
  
