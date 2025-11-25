@@ -15,6 +15,7 @@
 #include "ws/run_ws.h"
 #include "pce/run_pce.h"
 #include "genesis/run_genesis.h"
+#include "gbc/run_gbc.h"
 #include "last_game.h"
 #define RETRO_COMPAT_IMPLEMENTATION
 #include "ngp/race/retro_compat.h"
@@ -45,7 +46,7 @@ void setup() {
   } else {
     // Welcome
     display.welcome();
-    input.waitPress(3000);
+    input.waitPress(4000);
 
     // Try to get last game from NVS or select a new one
     romPath = getLastGameFromNvs(display, input, sd);
@@ -59,10 +60,10 @@ void setup() {
 
   printf("Selected ROM: %s\n", romPath.c_str());
 
-  display.topBar("COPYING TO FLASH", false, false);
+  display.topBar("COPYING ROM TO FLASH", false, false);
   display.subMessage("Loading...", 0);
   
-  // Find the rom partition
+  // Find the rom partition (SPIFFS)
   const esp_partition_t* romPart = findRomPartition("spiffs");
   if (!romPart) {
     while (1) {
@@ -74,13 +75,13 @@ void setup() {
 
   // Copy the ROM file to the partition
   size_t romSize = 0;
-  if (!copyFileToPartition(romPath.c_str(), romPart, &romSize)) {
+  if (!copyFileToPartition(romPath.c_str(), romPart, &romSize, CardputerView::copyProgress, &display)) {
     while (1) {
-      display.topBar("ROM TOO HEAVY", false, false);
+      display.topBar("ROM IS TOO HEAVY", false, false);
       display.subMessage("SD to Flash failed", 1500);
-      display.subMessage("Launcher max rom 1MB", 2000);
-      display.subMessage("Flash this firmware", 2000);
-      display.subMessage("to unlock full 5MB", 2000);
+      display.subMessage("Configure Launcher", 2000);
+      display.subMessage("Game Station partition", 2000);
+      display.subMessage("to unlock full 4.5MB", 2000);
     }
   }
 
@@ -151,7 +152,7 @@ void setup() {
       run_sms(get_rom_ptr(), get_rom_size(), isGG, romName.c_str());
   }
   else if (ext == ROM_TYPE_NGP) {
-      // --- Neo Geo Pocket ---
+      // --- Neo Geo Pocket / Color ---
       int machine = detectNeoGeoPocketFromRom(get_rom_ptr(), get_rom_size(), romPath);
       run_ngp(get_rom_ptr(), get_rom_size(), machine);
   }
@@ -160,12 +161,16 @@ void setup() {
       run_genesis(get_rom_ptr(), get_rom_size());
   }
   else if (ext == ROM_TYPE_WS) {
-      // --- WonderSwan ---
+      // --- WonderSwan / Color ---
       run_ws(get_rom_ptr(), get_rom_size(), romName.c_str(), detectWonderSwanFromRom(romPath));
   }
   else if (ext == ROM_TYPE_PCE) {
-      // --- PC Engine ---
+      // --- PC Engine / TurboGrafx-16 ---
       run_pce(get_rom_ptr(), get_rom_size(), romName.c_str());
+  }
+  else if (ext == ROM_TYPE_GB) { 
+      // --- Game Boy / Color ---
+      run_gbc(get_rom_ptr(), get_rom_size(), romName.c_str());
   }
   else {
       display.topBar("ERROR", false, false);
