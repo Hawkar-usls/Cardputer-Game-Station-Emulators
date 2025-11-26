@@ -216,10 +216,6 @@ static void gbc_display_task(void *arg)
       int dstY = yOffset + y;
       M5Cardputer.Display.setAddrWindow(xOffset, dstY, dstW, 1);
       M5Cardputer.Display.pushPixels(s_lineBuf, dstW);
-
-      if ((y & 31) == 31) {
-        vTaskDelay(0);
-      }
     }
 
     M5Cardputer.Display.endWrite();

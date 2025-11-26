@@ -134,7 +134,9 @@ void run_gbc(const uint8_t* romData, size_t romLen, const char* romPathOrName) {
             gnuboy_set_palette((gb_palette_t)gbPalette);
         }
 
-        gnuboy_run(drawFrame);   // trigger callbacks video/audio
+        // 1/2 frame skip
+        bool doDraw = drawFrame && ((frameCount & 1) == 0);
+        gnuboy_run(doDraw);   // trigger callbacks video/audio
 
         int pad = gbc_input_poll();
         if (pad >= 0) {
