@@ -84,4 +84,12 @@ For [Launcher](https://github.com/bmorcelli/Launcher)'s users, you can now use t
 
 > In the Launcher main menu, Go to **CFG → Partition Change, and select Game Station.**
 
-The launcher will reboot automatically, and after that you can run larger ROMs (up to 4.5MB).
+The firmware can also automatically switch the device to the “Game Station” partition scheme in order to load ROMs larger than 1 MB.
+
+When you try to run a ROM that needs more space (up to 4.5 MB):
+
+- The firmware checks that it is running under the Launcher.
+- If needed, it asks to flash the Game Station partition table.
+- The device reboots once to apply the new layout.
+
+After the reboot, you can load larger ROMs normally, without any extra steps.
