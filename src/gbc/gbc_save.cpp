@@ -35,8 +35,6 @@ static volatile bool g_flag_flush = false;
 // Utils FS
 // ============================================================================
 static void make_save_path(const char* romPathOrName) {
-  mkdir(GBC_SAVE_DIR, 0777);
-
   const char* base = share::gameSaveBasename(romPathOrName);
   char name[160] = {0};
 
@@ -66,7 +64,7 @@ static void make_save_path(const char* romPathOrName) {
 // ============================================================================
 static bool save_now() {
   if (!g_save_path) return false;
-  if (!share::gameSaveEnsureParentReady(g_save_path)) {
+  if (!share::gameSaveEnsureParentReady(GBC_SAVE_DIR)) {
     printf("[GBC][SAVE] storage path not ready, skip save\n");
     return false;
   }
@@ -178,7 +176,7 @@ extern "C" void gbc_save_init(const char* romPathOrName) {
 
 extern "C" void gbc_save_load(void) {
   if (!g_save_path) return;
-  if (!share::gameSaveEnsureParentReady(g_save_path)) {
+  if (!share::gameSaveEnsureParentReady(GBC_SAVE_DIR)) {
     printf("[GBC][SAVE] skip load (storage not ready)\n");
     return;
   }

@@ -60,7 +60,7 @@ static void make_save_path(const char* romPathOrName){
 // ====================== I/O ======================
 static bool flush_now(){
   if (!g_sram || !g_sram_len) return false;
-  if (!share::gameSaveEnsureParentReady(g_save_path)) return false;
+  if (!share::gameSaveEnsureParentReady(WS_SAVE_DIR)) return false;
   if (share::gameSaveIsTrivialSram(g_sram, g_sram_len)) return false;
 
   FILE* f = fopen(g_save_path, "r+b");
@@ -178,7 +178,7 @@ void ws_save_init(const char* romPathOrName){
   // Construit chemin
   make_save_path(romPathOrName);
 
-  if (share::gameSaveEnsureParentReady(g_save_path)) {
+  if (share::gameSaveEnsureParentReady(WS_SAVE_DIR)) {
     FILE* f = fopen(g_save_path, "rb");
     if (!f) {
       f = fopen(g_save_path, "wb");
@@ -243,7 +243,7 @@ void ws_save_init(const char* romPathOrName){
 
 void ws_save_load(void){
   if (!g_sram || !g_sram_len) return;
-  if (!share::gameSaveEnsureParentReady(g_save_path)) {
+  if (!share::gameSaveEnsureParentReady(WS_SAVE_DIR)) {
     printf("[WS][SAVE] skip load (storage not ready)\n");
     return;
   }
