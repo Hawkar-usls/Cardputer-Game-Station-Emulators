@@ -1,11 +1,12 @@
 # Cardputer Game Station
 
 ![NES emulator screen captures on the M5Stack Cardputer](nes_emulator_s.jpg)
+![GBC emulator screen captures on the M5Stack Cardputer](gbc_emulator_s.jpg)
 ![SMS emulator screen captures on the M5Stack Cardputer](sms_emulator_s.jpg)
 ![NGP emulator screen captures on the M5Stack Cardputer](ngp_emulator_s.jpg)
 ![Megadrive emulator screen captures on the M5Stack Cardputer](megadrive_emulator_s.jpg)
 
-Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), **Smsplus**, [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan) and **PCE-GO**. All cores were modified to run using **less than 256 KB of RAM**.
+Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), **Smsplus**, [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan), **GnuBoy**, and **PCE-GO**. All cores were modified to run using **less than 256 KB of RAM**.
 
  Console           | Sound | Video | Save | Speed | All Games  | Notes |
 |-------------------|--------|--------|---------------|-------------|-------------------|--------|
