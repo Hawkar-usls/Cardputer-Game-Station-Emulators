@@ -85,7 +85,7 @@ void setup() {
       
       if (confirmed) {
         display.topBar("FLASHING PARTITIONS", false, false);
-        display.subMessage("Use larger ROMs (4.5MB)", 3000);
+        display.subMessage("Allow up to 4.5MB roms", 3000);
         auto ok = flashGameStationPartition();
         if (ok) {
           display.subMessage("Success, rebooting...", 3000);
