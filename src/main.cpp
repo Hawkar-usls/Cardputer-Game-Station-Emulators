@@ -15,6 +15,7 @@
 #include "ngp/run_ngp.h"
 #include "ws/run_ws.h"
 #include "pce/run_pce.h"
+#include "lynx/run_lynx.h"
 #include "genesis/run_genesis.h"
 #include "gbc/run_gbc.h"
 #include "last_game.h"
@@ -192,6 +193,10 @@ void setup() {
   else if (ext == ROM_TYPE_GB) { 
       // --- Game Boy / Color ---
       run_gbc(get_rom_ptr(), get_rom_size(), romName.c_str());
+  }
+  else if (ext == ROM_TYPE_LYNX) {
+      // --- Lynx ---
+      run_lynx(get_rom_ptr(), get_rom_size(), romName.c_str());
   }
   else {
       display.topBar("ERROR", false, false);
