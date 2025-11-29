@@ -22,7 +22,8 @@ enum RomType {
     ROM_TYPE_GENESIS,
     ROM_TYPE_WS,
     ROM_TYPE_PCE,
-    ROM_TYPE_GB
+    ROM_TYPE_GB,
+    ROM_TYPE_LYNX
 };
 
 // NGP types
@@ -40,7 +41,7 @@ static inline bool hasRomExt(const std::string& path) {
     for (auto &ch : ext)
         ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
 
-    return (ext == "nes" || ext == "gg" || ext == "sms" || ext == "ngc" || ext == "ngp" || ext == "md" || ext == "ws" || ext == "wsc" || ext == "pce" || ext == "gb" || ext == "gbc" || ext == "gb");
+    return (ext == "nes" || ext == "gg" || ext == "sms" || ext == "ngc" || ext == "ngp" || ext == "md" || ext == "ws" || ext == "wsc" || ext == "pce" || ext == "gb" || ext == "gbc" || ext == "gb" || ext == "gbc" || ext == "lnx");
 }
 
 static inline int detectNeoGeoPocketFromRom(const uint8_t* rom, size_t size, const std::string& filepath)
@@ -97,13 +98,14 @@ RomType getRomType(const std::string& path) {
     if (ext == "wsc")  return ROM_TYPE_WS;
     if (ext == "pce")  return ROM_TYPE_PCE;
     if (ext == "gb" || ext == "gbc") return ROM_TYPE_GB;
+    if (ext == "lnx") return ROM_TYPE_LYNX;
 
     return ROM_TYPE_UNKNOWN;
 }
 
 static inline std::string getRomPath(SdService& sdService, CardputerView& display, CardputerInput& input, const std::string& initialFolder = "/", bool skipWelcome = false) {
     VerticalSelector verticalSelector(display, input);
-    std::vector<std::string> supportedExts = {".nes", ".gb", ".gbc", ".sms", ".md", ".gg", ".ngp",".ngc", ".ws" , ".wsc", ".pce"};
+    std::vector<std::string> supportedExts = {".nes", ".gb", ".gbc", ".sms", ".md", ".gg", ".ngp",".ngc", ".ws" , ".wsc", ".pce", ".lnx"};
 
     display.initialize();
     display.topBar("LOAD ROM CARTRIDGE", false, false);

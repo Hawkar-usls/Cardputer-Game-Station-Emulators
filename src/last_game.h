@@ -32,7 +32,7 @@ static inline std::string getLastGameFromNvs(
 
     std::string path = lastGame.c_str();
 
-    display.topBar("Getting last game", false, false);
+    display.topBar("GETTING LAST GAME", false, false);
     display.subMessage("Loading...", 0);
 
     // Verify if the file still exists
@@ -42,7 +42,7 @@ static inline std::string getLastGameFromNvs(
 
     // User confirmation
     ConfirmationSelector confirm(display, input);
-    bool confirmed = confirm.select("Resume last game?", _basename(path));
+    bool confirmed = confirm.select("RESUME LAST GAME?", _basename(path));
 
     return confirmed ? path : "";
 }
