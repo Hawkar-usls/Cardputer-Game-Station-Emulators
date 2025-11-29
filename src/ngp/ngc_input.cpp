@@ -40,35 +40,35 @@ extern "C" uint32_t ngc_input_poll(void) {
   ngpInputState = 0x00;
 #endif
 
-  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed('\\')) {
+  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
     ngpFullscreen = !ngpFullscreen;
   }
 
   // -------- DIRECTIONS --------
-  if (M5Cardputer.Keyboard.isKeyPressed('a') || M5Cardputer.Keyboard.isKeyPressed(',')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_LEFT;
 #else
     ngpInputState |=  NGP_BTN_LEFT;
 #endif
   }
-  if (M5Cardputer.Keyboard.isKeyPressed('d') || M5Cardputer.Keyboard.isKeyPressed('/')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_RIGHT;
 #else
     ngpInputState |=  NGP_BTN_RIGHT;
 #endif
   }
-  if (M5Cardputer.Keyboard.isKeyPressed('e') || M5Cardputer.Keyboard.isKeyPressed(';')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_UP;
 #else
     ngpInputState |=  NGP_BTN_UP;
 #endif
   }
-  if (M5Cardputer.Keyboard.isKeyPressed('s') ||
-      M5Cardputer.Keyboard.isKeyPressed('.') ||
-      M5Cardputer.Keyboard.isKeyPressed('z')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_DOWN;
 #else
@@ -77,21 +77,21 @@ extern "C" uint32_t ngc_input_poll(void) {
   }
 
   // -------- BOUTONS --------
-  if (M5Cardputer.Keyboard.isKeyPressed('l') || M5Cardputer.Keyboard.isKeyPressed('j')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2)) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_A;
 #else
     ngpInputState |=  NGP_BTN_A;
 #endif
   }
-  if (M5Cardputer.Keyboard.isKeyPressed('k')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_B;
 #else
     ngpInputState |=  NGP_BTN_B;
 #endif
   }
-  if (M5Cardputer.Keyboard.isKeyPressed('1') || (ks.fn && M5Cardputer.Keyboard.isKeyPressed(' '))) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START) || (ks.fn && M5Cardputer.Keyboard.isKeyPressed(' '))) {
 #if NGP_INPUT_ACTIVE_LOW
     ngpInputState &= ~NGP_BTN_OPTION;
 #else
@@ -100,12 +100,12 @@ extern "C" uint32_t ngc_input_poll(void) {
   }
 
   // Zoom
-  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed('/')) {
+  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
     if (!ngpFullscreen) ngpFullscreen = true;
     ngpZoomPercent = (ngpZoomPercent < 150) ? (ngpZoomPercent + 1) : 150;
     return dummy_ret;
   }
-  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(',')) {
+  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
     if (!ngpFullscreen) ngpFullscreen = true;
     ngpZoomPercent = (ngpZoomPercent > 100) ? (ngpZoomPercent - 1) : 100;
     return dummy_ret;

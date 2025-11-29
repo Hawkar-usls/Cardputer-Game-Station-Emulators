@@ -19,7 +19,7 @@ uint32_t controller_read_input() {
     share::checkCommonInput(status);
     
     // Zoom control and screen mode toggle
-    if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed('\\')) {
+    if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
         if (!fullscreenMode) {
             fullscreenMode = true;
             nesZoomPercent = 100;
@@ -34,7 +34,7 @@ uint32_t controller_read_input() {
     }
 
     // Zoom in / out
-    if (status.fn && M5Cardputer.Keyboard.isKeyPressed('/')) {
+    if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
         if (!fullscreenMode) fullscreenMode = true;
         nesZoomPercent+= 1;
         if (nesZoomPercent > 150) nesZoomPercent = 150;
@@ -42,7 +42,7 @@ uint32_t controller_read_input() {
 
     }
 
-    if (status.fn && M5Cardputer.Keyboard.isKeyPressed(',')) {
+    if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
         if (!fullscreenMode) fullscreenMode = true;
         nesZoomPercent-= 1;
         if (nesZoomPercent < 100) nesZoomPercent = 100;
@@ -50,32 +50,32 @@ uint32_t controller_read_input() {
     }
  
     // Arrows and buttons
-    if (M5Cardputer.Keyboard.isKeyPressed('a') || M5Cardputer.Keyboard.isKeyPressed(',')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
         value ^= (1 << 2); // left
     }
-    if (M5Cardputer.Keyboard.isKeyPressed('d') || M5Cardputer.Keyboard.isKeyPressed('/')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
         value ^= (1 << 3); // right
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed('e') || M5Cardputer.Keyboard.isKeyPressed(';')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
         value ^= (1 << 0); // up
     }
-    if (M5Cardputer.Keyboard.isKeyPressed('s') || M5Cardputer.Keyboard.isKeyPressed('.') || M5Cardputer.Keyboard.isKeyPressed('z')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
         value ^= (1 << 1); // down
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed('2')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT)) {
         value ^= (1 << 4); // select
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed('1')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) {
         value ^= (1 << 5); // start
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed('l') || M5Cardputer.Keyboard.isKeyPressed('j')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2)) {
         value ^= (1 << 6); // A
     }
-    if (M5Cardputer.Keyboard.isKeyPressed('k')) {
+    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
         value ^= (1 << 7); // B
     }
 

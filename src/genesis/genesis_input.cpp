@@ -49,7 +49,7 @@ extern "C" void genesis_controller_poll() {
   }
 
   // Screen mode toggle with '\'
-  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed('\\')) {
+  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
     if (!fullscreenMode) {
       fullscreenMode = true;
       genesisZoomPercent = 100;
@@ -64,13 +64,13 @@ extern "C" void genesis_controller_poll() {
   }
 
   // Zoom +/−
-  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed('/')) {
+  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
     if (!fullscreenMode) fullscreenMode = true;
     genesisZoomPercent += 1;
     if (genesisZoomPercent > 150) genesisZoomPercent = 150;
     return;
   }
-  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(',')) {
+  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
     if (!fullscreenMode) fullscreenMode = true;
     genesisZoomPercent -= 1;
     if (genesisZoomPercent < 100) genesisZoomPercent = 100;
@@ -78,16 +78,16 @@ extern "C" void genesis_controller_poll() {
   }
 
   // Arrow keys: ZQSD / ,./
-  const bool left  = M5Cardputer.Keyboard.isKeyPressed('a') || M5Cardputer.Keyboard.isKeyPressed(',');
-  const bool right = M5Cardputer.Keyboard.isKeyPressed('d') || M5Cardputer.Keyboard.isKeyPressed('/');
-  const bool up    = M5Cardputer.Keyboard.isKeyPressed('e') || M5Cardputer.Keyboard.isKeyPressed(';');
-  const bool down  = M5Cardputer.Keyboard.isKeyPressed('s') || M5Cardputer.Keyboard.isKeyPressed('.')  || M5Cardputer.Keyboard.isKeyPressed('z');
+  const bool left  = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2);
+  const bool right = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2);
+  const bool up    = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2);
+  const bool down  = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3);
 
   // Buttons A/B/C to j/k/l
-  const bool btnA     = M5Cardputer.Keyboard.isKeyPressed('j'); // A
-  const bool btnB     = M5Cardputer.Keyboard.isKeyPressed('k'); // B
-  const bool btnC     = M5Cardputer.Keyboard.isKeyPressed('l'); // C
-  const bool btnStart = M5Cardputer.Keyboard.isKeyPressed('1'); // Start
+  const bool btnA     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2);
+  const bool btnB     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B);
+  const bool btnC     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2);
+  const bool btnStart = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START);
 
   // Apply state to the 8 buttons
   set_button(BTN_UP,    up);

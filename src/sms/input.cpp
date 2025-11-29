@@ -25,7 +25,7 @@ void cardputer_read_input(bool isGG) {
     share::checkCommonInput(status);
 
     // --- fullscreen / zoom cycle ---
-    if (M5Cardputer.Keyboard.isChange() && key('\\')) {
+    if (M5Cardputer.Keyboard.isChange() && key(CARDPUTER_SCREEN_TOGGLE)) {
         if (!fullscreen) {
             fullscreen = true;
             scanline   = true;
@@ -48,7 +48,7 @@ void cardputer_read_input(bool isGG) {
     }
 
     // --- Zoom fin (FN + , ou FN + /) ---
-    if (status.fn && key('/')) {
+    if (status.fn && key(CARDPUTER_ZOOM_PLUS)) {
         smsZoomPercent += 1;
         if (smsZoomPercent > 150) smsZoomPercent = 150;
         video_compute_scaler_full();
@@ -56,7 +56,7 @@ void cardputer_read_input(bool isGG) {
         return;
     }
 
-    if (status.fn && key(',')) {
+    if (status.fn && key(CARDPUTER_ZOOM_MINUS)) {
         smsZoomPercent -= 1;
         if (smsZoomPercent < 100) smsZoomPercent = 100;
         video_compute_scaler_full();
@@ -65,17 +65,17 @@ void cardputer_read_input(bool isGG) {
     }
 
     // ---------- Mapping  ----------
-    if (key('a') || key(',')) smsButtons |= INPUT_LEFT;
-    if (key('d') || key('/')) smsButtons |= INPUT_RIGHT;
-    if (key('e') || key(';')) smsButtons |= INPUT_UP;
-    if (key('s') || key('.') || key('z')) smsButtons |= INPUT_DOWN;
-    if (key('j') || key('l')) smsButtons |= INPUT_BUTTON1;
-    if (key('k'))             smsButtons |= INPUT_BUTTON2;
+    if (key(CARDPUTER_LEFT_1) || key(CARDPUTER_LEFT_2)) smsButtons |= INPUT_LEFT;
+    if (key(CARDPUTER_RIGHT_1) || key(CARDPUTER_RIGHT_2)) smsButtons |= INPUT_RIGHT;
+    if (key(CARDPUTER_UP_1) || key(CARDPUTER_UP_2)) smsButtons |= INPUT_UP;
+    if (key(CARDPUTER_DOWN_1) || key(CARDPUTER_DOWN_2) || key(CARDPUTER_DOWN_3)) smsButtons |= INPUT_DOWN;
+    if (key(CARDPUTER_BTN_A_1) || key(CARDPUTER_BTN_A_2)) smsButtons |= INPUT_BUTTON1;
+    if (key(CARDPUTER_BTN_B))             smsButtons |= INPUT_BUTTON2;
 
     if (isGG) {
-        if (key('1')) smsSystem |= INPUT_START;
+        if (key(CARDPUTER_BTN_START)) smsSystem |= INPUT_START;
     } else {
-        if (key('1')) smsSystem |= INPUT_PAUSE;
+        if (key(CARDPUTER_BTN_START)) smsSystem |= INPUT_PAUSE;
     }
 
     input.pad[0]  = smsButtons;

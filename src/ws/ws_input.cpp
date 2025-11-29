@@ -36,10 +36,10 @@ extern "C" int ws_input_poll(int mode)
   }
 
   // Secondary directional pad 
-  const bool a = M5Cardputer.Keyboard.isKeyPressed(';');
-  const bool w = M5Cardputer.Keyboard.isKeyPressed('.');
-  const bool d = M5Cardputer.Keyboard.isKeyPressed('/');
-  const bool s = M5Cardputer.Keyboard.isKeyPressed(',');
+  const bool a = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2);
+  const bool w = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2);
+  const bool d = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2);
+  const bool s = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2);
 
   if (mode == 0) {
     // In horizontal mode, WASD -> Y cross
@@ -50,20 +50,20 @@ extern "C" int ws_input_poll(int mode)
   } else {
     // In vertical mode, WASD -> X cross
     if (a) state |= WS_X1;
-    if (w || M5Cardputer.Keyboard.isKeyPressed('k')) state |= WS_X2;
-    if (d || M5Cardputer.Keyboard.isKeyPressed('l')) state |= WS_X3;
+    if (w || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) state |= WS_X2;
+    if (d || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1)) state |= WS_X3;
     if (s) state |= WS_X4;
   }
 
   //  Boutons
-  if (M5Cardputer.Keyboard.isKeyPressed('l') && mode == 0) state |= WS_A;       // A
-  if (M5Cardputer.Keyboard.isKeyPressed('k') && mode == 0) state |= WS_B;       // B
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) && mode == 0) state |= WS_A;       // A
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B) && mode == 0) state |= WS_B;       // B
 
-  if (M5Cardputer.Keyboard.isKeyPressed('1')) state |= WS_START;  // START 
-  if (M5Cardputer.Keyboard.isKeyPressed('2'))  state |= WS_OPTION; // OPTION 
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) state |= WS_START;  // START 
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT))  state |= WS_OPTION; // OPTION 
 
   // Zoom / fullscreen toggle
-  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed('\\')) {
+  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
     if (!ws_fullscreen) {
       ws_fullscreen  = true;
       ws_zoomPercent = 100;
@@ -77,12 +77,12 @@ extern "C" int ws_input_poll(int mode)
     return (int)state;
   }
 
-  if (status.fn && M5Cardputer.Keyboard.isKeyPressed('/')) {
+  if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
     ws_zoomPercent = std::min(150, ws_zoomPercent + 1);
     return (int)state;
   }
 
-  if (status.fn && M5Cardputer.Keyboard.isKeyPressed(',')) {
+  if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
     ws_zoomPercent = std::max(100, ws_zoomPercent - 1);
     return (int)state;
   }

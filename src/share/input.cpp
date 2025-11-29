@@ -29,25 +29,25 @@ namespace share
         }
 
         // Volume +
-        if (key('=') || (status.fn && key(';'))) {
+        if (key(CARDPUTER_VOL_UP_1) || (status.fn && key(CARDPUTER_VOL_UP_2))) {
             int v = M5Cardputer.Speaker.getVolume();
             M5Cardputer.Speaker.setVolume(std::min(v + 3, 255));
         }
 
         // Volume -
-        if (key('-') || (status.fn && key('.'))) {
+        if (key(CARDPUTER_VOL_DOWN_1) || (status.fn && key(CARDPUTER_VOL_DOWN_2))) {
             int v = M5Cardputer.Speaker.getVolume();
             M5Cardputer.Speaker.setVolume(std::max(v - 3, 0));
         }
 
         // Bright +
-        if (key(']')) {
+        if (key(CARDPUTER_BRIGHT_UP)) {
             int b = M5Cardputer.Display.getBrightness();
             M5Cardputer.Display.setBrightness(std::min(b + 2, 255));
         }
 
         // Bright -
-        if (key('[')) {
+        if (key(CARDPUTER_BRIGHT_DOWN)) {
             int b = M5Cardputer.Display.getBrightness();
             M5Cardputer.Display.setBrightness(std::max(b - 2, 0));
         }
