@@ -6,21 +6,22 @@
 ![NGP emulator screen captures on the M5Stack Cardputer](ngp_emulator_s.jpg)
 ![Megadrive emulator screen captures on the M5Stack Cardputer](megadrive_emulator_s.jpg)
 
-Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), **Smsplus**, [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan), **GnuBoy**, and **PCE-GO**. All cores were modified to run using **less than 256 KB of RAM**.
+Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), **Smsplus**, [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan), **GnuBoy**, [Handy](https://github.com/libretro/libretro-handy) and **PCE-GO**. All cores were modified to run using **less than 256 KB of RAM**.
 
  Console           | Sound | Video | Save | Speed | All Games  | Notes |
 |-------------------|--------|--------|---------------|-------------|-------------------|--------|
 | **NES**           | ✅ | ✅ | ✅ | ✅ | ✅ | Few mappers issues in some games |
-| **Game Boy**      | ✅ | ✅ | ✅ | ✅ | ✅ | Fully compatible, Mono/Color support |
+| **Game Boy**      | ✅ | ✅ | ✅ | ✅ | ✅ | Mono/Color support, Fully compatible |
 | **Master System** | ✅ | ✅ | ✅ | ✅ | ✅ | Fully compatible |
 | **Game Gear**     | ✅ | ✅ | ✅ | ✅ | ✅ | Fully compatible |
 | **PC Engine**     | ✅ | ✅ | ⚠️ | ✅ | ✅ | Fully compatible |
+| **Lynx**          | ✅ | ✅ | ⚠️ | ✅ | ✅ | Some slowdown in heavy titles, Sound issues in some games  |
 | **Mega Drive**    | ✅ | ✅ | ⚠️ | ✅ | ✅ | Some slowdown and not accurate sound in heavy titles |
 | **Neo Geo Pocket**| ✅ | ✅ | ⚠️ | ✅ | ✅ | Mono/color support. Some slowdown in heavy titles |
 | **WonderSwan**    | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | Mono/color support, not fullspeed (75FPS) in most games  |
 
 
-It runs **`.nes` `.gb` `.gbc` `.sms` `.gg`  `.md` `.ngc` `.ngp` `.ws` `.wsc` `.pce` ROM files directly from the SD**.
+It runs **`.nes` `.gb` `.gbc` `.sms` `.gg` `.lnx` `.pce` `.md` `.ngc` `.ngp` `.ws` `.wsc` ROM files from the SD**.
 
 > **Make sure your ROMs are uncompressed** (not .zip, .7z, or .rar).
 
@@ -65,15 +66,17 @@ You can precisely adjust the display zoom level with `fn` + `arrows left/right`.
 
 ## About Games
 
-You can place the **ROM uncompressed files** anywhere on your SD card and select them. **Avoid having folders with more than 512 items** to prevent loading times. The firmware allows running ROMs up to 6 MB.
+You can place the **ROM uncompressed files** anywhere on your SD card and select them. The firmware allows running ROMs up to 6 MB.
 
-When browsing your game list, you can **type the first few letters of a game’s name** to jump directly to it. This makes it much faster to find a specific title, especially when your library contains dozens of entries. You should **avoid game titles longer than 64 characters**.
+> **⚠️ Avoid having more than 512 ROMs per folder** to prevent loading times.
+
+When browsing your game list, you can **type the first few letters of a game’s name** to jump directly to it. This makes it much faster to find a specific title, especially when your library contains dozens of entries.
 
 ## About Saves
 
 Save files are created automatically and organized into separate folders per console on your SD card. **Each save is linked to the game’s filename**.
 
-**⚠️ Important: The autosave system writes to the SD card in the background at regular intervals.**
+> **⚠️ The autosave system writes to the SD card in the background at regular intervals.**
 
 The chance of corrupting a save by resetting the device exactly at the moment a write occurs is low. However, to completely eliminate this risk, it is recommended to exit games properly.
 
