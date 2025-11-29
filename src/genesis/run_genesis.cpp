@@ -6,6 +6,7 @@
 #include "genesis/run_genesis.h"
 #include "genesis_sound.h"
 #include "genesis_display.h"
+#include "share/utils.h"
 #include <Arduino.h>
 #include <M5Cardputer.h>
 
@@ -49,23 +50,6 @@ static inline void ensure_alloc(void** p, size_t bytes, const char* name) {
   if (!*p) {
     *p = heap_caps_calloc(1, bytes, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if (!*p) { printf("[FATAL] alloc %s (%u bytes) failed\n", name, (unsigned)bytes); abort(); }
-  }
-}
-
-/* Sleep until specified time in microseconds, for frame pacing */
-static inline void sleep_until_us(uint64_t t_us) {
-  for (;;) {
-    int64_t now = (int64_t)esp_timer_get_time();
-    int64_t remain = (int64_t)t_us - now;
-    if (remain <= 0) break;
-    if (remain > 2000) {
-      // big sleep en ms
-      vTaskDelay(pdMS_TO_TICKS((remain - 1000) / 1000));
-    } else {
-      // small sleep en us
-      ets_delay_us((uint32_t)remain);
-      break;
-    }
   }
 }
 
@@ -203,6 +187,8 @@ IRAM_ATTR static void run_one_frame() {
 
 /* Run genesis emulation with XIP mapped rom */
 extern "C" void IRAM_ATTR run_genesis(const uint8_t* rom, size_t len) {
+  M5Cardputer.Display.setSwapBytes(true);
+
   // Allocate buffers
   genesis_alloc_core_buffers();
   #ifndef GENESIS_NO_SOUND
@@ -255,7 +241,7 @@ extern "C" void IRAM_ATTR run_genesis(const uint8_t* rom, size_t len) {
         next_frame_us = (uint64_t)now + frame_us;
       }
 
-      sleep_until_us(next_frame_us);
+      share::sleep_until_us(next_frame_us);
     } else {
       taskYIELD();
     }

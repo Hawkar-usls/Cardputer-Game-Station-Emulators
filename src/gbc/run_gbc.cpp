@@ -7,24 +7,11 @@ extern "C" {
 #include "gbc_sound.h"
 #include "gbc_input.h"
 #include "gbc_save.h"
+#include "share/utils.h"
 
 static uint16_t* s_gbFramebuf = nullptr;
 static int16_t* s_audioBuf = nullptr;
 extern int gbc_sampleRate;
-
-static inline void sleep_until_us(uint64_t t_us) {
-  for (;;) {
-    int64_t now = (int64_t)esp_timer_get_time();
-    int64_t remain = (int64_t)t_us - now;
-    if (remain <= 0) break;
-    if (remain > 2000) {
-      vTaskDelay(pdMS_TO_TICKS((remain - 1000) / 1000));
-    } else {
-      ets_delay_us((uint32_t)remain);
-      break;
-    }
-  }
-}
 
 // callback video GNUBOY
 static void gbc_video_callback(void *buffer)
@@ -173,7 +160,7 @@ void run_gbc(const uint8_t* romData, size_t romLen, const char* romPathOrName) {
 
         } else {
             drawFrame = true;
-            sleep_until_us(next_frame_us);
+            share::sleep_until_us(next_frame_us);
         }
     }
 }
