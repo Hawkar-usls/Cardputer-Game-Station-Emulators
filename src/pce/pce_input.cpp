@@ -25,7 +25,7 @@ void pce_input_read(uint8_t joypads[8])
 
   // Toggle / fullscreen
   if (M5Cardputer.Keyboard.isChange() &&
-      M5Cardputer.Keyboard.isKeyPressed('\\')) {
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
 
     if (!pceFullScreen) {
       pceFullScreen  = true;
@@ -42,7 +42,7 @@ void pce_input_read(uint8_t joypads[8])
   }
 
   // Zoom in
-  if (status.fn && M5Cardputer.Keyboard.isKeyPressed('/')) {
+  if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
     if (!pceFullScreen) pceFullScreen = true;
     pceZoomLevel += 1;
     if (pceZoomLevel > 150) pceZoomLevel = 150;
@@ -51,7 +51,7 @@ void pce_input_read(uint8_t joypads[8])
   }
 
   // Zoom out 
-  if (status.fn && M5Cardputer.Keyboard.isKeyPressed(',')) {
+  if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
     if (!pceFullScreen) pceFullScreen = true;
     pceZoomLevel -= 1;
     if (pceZoomLevel < 100) pceZoomLevel = 100;
@@ -60,48 +60,48 @@ void pce_input_read(uint8_t joypads[8])
   }
 
   // Gauche
-  if (M5Cardputer.Keyboard.isKeyPressed('a') ||
-      M5Cardputer.Keyboard.isKeyPressed(',')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
     buttons |= JOY_LEFT;
   }
 
   // Droite
-  if (M5Cardputer.Keyboard.isKeyPressed('d') ||
-      M5Cardputer.Keyboard.isKeyPressed('/')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
     buttons |= JOY_RIGHT;
   }
 
   // Haut
-  if (M5Cardputer.Keyboard.isKeyPressed('e') ||
-      M5Cardputer.Keyboard.isKeyPressed(';')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
     buttons |= JOY_UP;
   }
 
   // Bas
-  if (M5Cardputer.Keyboard.isKeyPressed('s') ||
-      M5Cardputer.Keyboard.isKeyPressed('.') ||
-      M5Cardputer.Keyboard.isKeyPressed('z')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
     buttons |= JOY_DOWN;
   }
 
   // Select
-  if (M5Cardputer.Keyboard.isKeyPressed('2')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT)) {
     buttons |= JOY_SELECT;
   }
 
   // Start
-  if (M5Cardputer.Keyboard.isKeyPressed('1')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) {
     buttons |= JOY_RUN;
   }
 
   // Bouton I (A)
-  if (M5Cardputer.Keyboard.isKeyPressed('l') ||
-      M5Cardputer.Keyboard.isKeyPressed('j')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) ||
+      M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2)) {
     buttons |= JOY_A;
   }
 
   // Bouton II (B)
-  if (M5Cardputer.Keyboard.isKeyPressed('k')) {
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
     buttons |= JOY_B;
   }
 
