@@ -492,11 +492,13 @@ void CardputerView::confirmationPrompt(std::string label) {
     Display->drawRoundRect(65, 85, 40, 20, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
     Display->setCursor(81, 96);
     Display->printf("<");
-
+    
     // ok button
+    Display->setTextSize(1.5);
     Display->fillRoundRect(128, 85, 40, 20, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
-    Display->setCursor(142, 96);
+    Display->setCursor(140, 96);
     Display->printf("OK");
+    Display->setTextSize(TEXT_WIDE);
 }
 
 void CardputerView::value(std::string label, std::string value) {
@@ -867,6 +869,7 @@ uint16_t CardputerView::colorForExt(const std::string& extRaw) const {
     if (ext == ".ws" || ext == ".wsc") return WS_COLOR;
     if (ext == ".pce") return PCE_COLOR;
     if (ext == ".gb" || ext == ".gbc") return GAMEBOY_COLOR;
+    if (ext == ".lnx") return LYNX_COLOR;
 
     return TEXT_COLOR;
 }
