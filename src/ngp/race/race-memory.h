@@ -15,6 +15,9 @@
 #define INLINE inline
 #endif
 
+// Additions by MrPaul for 16/32-bit native bus width reads(when possible) and optional boundary safety fallback
+#define NGP_16BIT_READ 1
+#define TLCSMEMREAD_BOUNDARY_SAFETY 0
 
 #include "types.h"
 #include "neopopsound.h"
@@ -168,6 +171,92 @@ static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 	return 0xFF;
 }
 
+#if NGP_16BIT_READ
+// ----------------------------
+// Read 16-bit word
+// ----------------------------
+static INLINE unsigned short tlcsMemReadW(unsigned int addr)
+{
+    addr &= 0x00FFFFFF;
+
+    // ----------------------
+    // SYSTEM MEMORY (RAM)
+    // ----------------------
+    if (addr < 0x00200000)
+    {
+        if (addr < 0x000008A0)
+        {
+            if (addr == 0xBC)
+                ngpSoundExecute();
+
+            // direct 16-bit read from cpuram
+            return *((unsigned short*)&cpuram[addr]);
+        }
+        else if (addr > 0x00003FFF && addr < 0x00018000)
+        {
+            unsigned char *r = mainram + (addr - 0x00004000);
+
+            // special registers
+            switch (addr)
+            {
+                case 0x6DA2: return *((unsigned short*)r);
+                case 0x6F80: return 0x80FF;
+                case 0x6F85: return *((unsigned short*)r);
+                case 0x6F82: return ngpInputState;
+                default: break;
+            }
+
+            return *((unsigned short*)r);
+        }
+    }
+
+    // ----------------------
+    // ROM/XIP memory
+    // ----------------------
+    else
+    {
+        const unsigned char *p;
+
+        if (addr < 0x00400000)
+            p = mainrom + (addr - 0x00200000);
+        else if (addr < 0x00800000)
+            return 0xFFFF;
+        else if (addr < 0x00A00000)
+            p = mainrom + (addr - (0x00800000 - 0x00200000));
+        else if (addr < 0x00FF0000)
+            return 0xFFFF;
+        else
+            p = cpurom + (addr - 0x00FF0000);
+
+#if TLCSMEMREAD_BOUNDARY_SAFETY
+        // check if word crosses region boundary
+        if (((addr < 0x00200000) && (addr+1) >= 0x00200000) ||
+            ((addr < 0x00400000) && (addr+1) >= 0x00400000) ||
+            ((addr < 0x00800000) && (addr+1) >= 0x00800000) ||
+            ((addr < 0x00A00000) && (addr+1) >= 0x00A00000) ||
+            ((addr < 0x00FF0000) && (addr+1) >= 0x00FF0000))
+        {
+            return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
+        }
+#endif
+
+        // check alignment
+        if (((uintptr_t)p & 1) == 0)
+        {
+            // aligned 16-bit read
+            return *((const unsigned short*)p);
+        }
+        else
+        {
+            // unaligned: read two bytes individually
+            return p[0] | ((unsigned short)p[1] << 8);
+        }
+    }
+
+    // fallback
+    return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
+}
+#else
 /* read a word from a memory address (addr) */
 static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 {
@@ -193,6 +282,7 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
    return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
 #endif
 }
+#endif
 
 /* read a long word from a memory address (addr) */
 static INLINE unsigned int tlcsMemReadL(unsigned int addr)
