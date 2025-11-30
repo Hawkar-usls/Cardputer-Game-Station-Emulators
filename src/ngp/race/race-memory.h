@@ -15,7 +15,7 @@
 #define INLINE inline
 #endif
 
-// Additions by MrPaul for 16/32-bit native bus width reads(when possible) and optional boundary safety fallback
+// Additions by MrPaul for 16 native bus width reads(when possible) and optional boundary safety fallback
 #define NGP_16BIT_READ 1
 #define TLCSMEMREAD_BOUNDARY_SAFETY 0
 
@@ -254,7 +254,7 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
     }
 
     // fallback
-    return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
+    //return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
 }
 #else
 /* read a word from a memory address (addr) */
