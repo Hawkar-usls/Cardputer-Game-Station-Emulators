@@ -100,11 +100,14 @@ static inline IRAM_ATTR void paint_fullscreen_stretch()
   const int panelH = 135;
   const int srcW   = NGPC_W;
 
-  const int parity = (int)s_interlace_parity;
-
   M5.Display.startWrite();
-
+  
+  #ifdef NGP_INTERLACED
+  const int parity = (int)s_interlace_parity;
   for (int y = parity; y < panelH; y += 2) {
+  #else
+  for (int y = 0; y < panelH; y += 1) {
+  #endif
     const uint16_t  srcY    = s_lut_y_full[y];                         // 0..(srcH-1)
     const uint16_t* srcLine = drawBuffer + (size_t)srcY * srcW;        // source
     const uint8_t*  base    = (const uint8_t*)srcLine;                 // base 8-bit
