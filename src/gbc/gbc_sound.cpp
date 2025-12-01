@@ -140,7 +140,7 @@ extern "C" void gbc_sound_init(int sample_rate)
         M5Cardputer.Speaker.begin();
     }
 
-    M5Cardputer.Speaker.setVolume(80);
+    M5Cardputer.Speaker.setVolume(60);
     M5Cardputer.Speaker.stop(kChannel);
 
     // Ring buffer
