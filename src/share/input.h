@@ -36,7 +36,10 @@
 #define CARDPUTER_BRIGHT_UP         ']'     // Bright +
 #define CARDPUTER_BRIGHT_DOWN       '['     // Bright -
 
+extern uint32_t lastPadState;
+
 namespace share
 {
+    bool shouldPollInput(); 
     void checkCommonInput(const Keyboard_Class::KeysState& status);
 }

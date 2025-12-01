@@ -3,6 +3,7 @@
 
 extern bool fullscreenMode;
 extern int nesZoomPercent;
+extern uint32_t lastPadState;
 
 extern "C" {
 
@@ -12,6 +13,10 @@ void controller_init() {
 
 uint32_t controller_read_input() {
     uint32_t value = 0xFFFFFFFF;
+
+    if (!share::shouldPollInput()) {
+        return lastPadState;
+    }
 
     M5Cardputer.update();
     Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
@@ -79,6 +84,7 @@ uint32_t controller_read_input() {
         value ^= (1 << 7); // B
     }
 
+    lastPadState = value;
     return value;
 }
 

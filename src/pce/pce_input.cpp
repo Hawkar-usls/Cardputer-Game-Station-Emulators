@@ -12,6 +12,10 @@ extern int  pceZoomLevel;
 
 void pce_input_read(uint8_t joypads[8])
 {
+  if (!share::shouldPollInput()) {
+      return;
+  }
+
   for (int i = 0; i < 8; ++i) {
     joypads[i] = 0;
   }

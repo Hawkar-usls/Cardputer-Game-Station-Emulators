@@ -6,8 +6,23 @@
 #include "game_save.h"
 #include <Preferences.h>
 
+static uint32_t s_lastInputMs = 0;
+uint32_t lastPadState = 0xFFFFFFFF;
+static const uint32_t INPUT_POLL_PERIOD_MS = 10;
+
 namespace share
 {
+   bool shouldPollInput()
+    {
+        uint32_t now = millis();
+        if (now - s_lastInputMs < INPUT_POLL_PERIOD_MS) {
+            return false;
+        }
+
+        s_lastInputMs = now;
+        return true;
+    }
+
     static inline bool key(char c) {
         return M5Cardputer.Keyboard.isKeyPressed(c);
     }

@@ -20,6 +20,7 @@ extern bool ngpFullscreen;
 extern int  ngpZoomPercent;
 static bool prevBs = false;
 static uint32_t lastToggle = 0;
+extern uint32_t lastPadState;
 
 extern "C" void ngc_input_init(void) {
   ngpInputState = 0;
@@ -27,6 +28,10 @@ extern "C" void ngc_input_init(void) {
 
 extern "C" uint32_t ngc_input_poll(void) {
   uint32_t dummy_ret = 0xFFFFFFFF;
+
+  if (!share::shouldPollInput()) {
+      return lastPadState;
+  }
 
   M5Cardputer.update();
   Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
@@ -111,5 +116,6 @@ extern "C" uint32_t ngc_input_poll(void) {
     return dummy_ret;
   }
 
+  lastPadState = ngpInputState;
   return ngpInputState;
 }
