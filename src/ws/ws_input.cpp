@@ -6,9 +6,14 @@
 
 extern bool ws_fullscreen;
 extern int  ws_zoomPercent;
+extern uint32_t lastPadState;
 
 extern "C" int ws_input_poll(int mode)
 {
+  if (!share::shouldPollInput()) {
+      return lastPadState;
+  }
+
   M5Cardputer.update();
   Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
   uint16_t state = 0;
@@ -86,6 +91,7 @@ extern "C" int ws_input_poll(int mode)
     ws_zoomPercent = std::max(100, ws_zoomPercent - 1);
     return (int)state;
   }
-
+  
+  lastPadState = state;
   return (int)state;
 }

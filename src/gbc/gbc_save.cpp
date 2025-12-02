@@ -86,13 +86,8 @@ static bool save_now() {
            rc, g_save_path, attempt, max_attempts);
 
     if (attempt < max_attempts) {
-      vTaskDelay(pdMS_TO_TICKS(10));
+      vTaskDelay(pdMS_TO_TICKS(200));
     }
-  }
-
-  if (rc != 0) {
-    // All attempts failed
-    return false;
   }
 
   share::setGameIsSaving(false);

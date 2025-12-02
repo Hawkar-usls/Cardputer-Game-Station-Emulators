@@ -4,9 +4,6 @@
 #include <M5Cardputer.h>
 #include <Arduino.h>
 
-static uint32_t s_lastCommonInputMs = 0;
-static const uint32_t COMMON_INPUT_PERIOD_MS = 10;
-
 extern "C" {
   // Gwenesis APIs 
   void gwenesis_io_pad_press_button(int pad, int idx);
@@ -39,14 +36,12 @@ static inline void set_button(int idx, bool pressed) {
 
 /* Polling cardputer keyboard */
 extern "C" void genesis_controller_poll() {
+  if (!share::shouldPollInput()) return;
+
   M5Cardputer.update();
   Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
-  uint32_t now = millis();
-  if (now - s_lastCommonInputMs >= COMMON_INPUT_PERIOD_MS) {
-    s_lastCommonInputMs = now;
-    share::checkCommonInput(ks);
-  }
+  share::checkCommonInput(ks);
 
   // Screen mode toggle with '\'
   if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
@@ -84,7 +79,7 @@ extern "C" void genesis_controller_poll() {
   const bool down  = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3);
 
   // Buttons A/B/C to j/k/l
-  const bool btnA     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2);
+  const bool btnA     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1);
   const bool btnB     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B);
   const bool btnC     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2);
   const bool btnStart = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START);

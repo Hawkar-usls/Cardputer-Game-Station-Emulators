@@ -119,15 +119,12 @@ static void SaveTask(void*){
 
     if (do_flush && now >= g_next_allow){
       bool ok = flush_now();
-      if (ok) {
-        // OK
-        share::setGameIsSaving(false);
-        g_next_allow = xTaskGetTickCount() + pdMS_TO_TICKS(GAP_MS);
-      } else {
-        // Fail, don't delay next try, forcer redétection dirty
+      g_next_allow = xTaskGetTickCount() + pdMS_TO_TICKS(GAP_MS);
+      share::setGameIsSaving(false);
+      if (!ok) {
+        // Fail, force dirty
         g_crc_last = 0xFFFFFFFFu;
         printf("[WS][SAVE] save failed, will retry on next tick\n");
-        // gameIsSaving remains true
       }
     }
   }

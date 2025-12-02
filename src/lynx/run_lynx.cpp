@@ -113,6 +113,7 @@ void run_lynx(const uint8_t* romData, size_t romLen, const char* romName)
     gAudioBufferPointer = 0;
     gAudioLastUpdateCycle = 0;
     gAudioEnabled = 1;
+    bool drawFrame = true;
 
     printf("[LYNX] starting loop @ %d FPS\n", targetFps);
 
@@ -125,8 +126,6 @@ void run_lynx(const uint8_t* romData, size_t romLen, const char* romName)
         }
 
         // ── Draw ───────────────────────────────────
-        bool drawFrame = !skipNextDraw;   // pattern 1/2
-
         // Render at least one frame if too many were skipped
         if (!drawFrame && skippedInARow >= 2) {
             drawFrame = true;
