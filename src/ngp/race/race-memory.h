@@ -16,8 +16,17 @@
 #endif
 
 // Additions by MrPaul for 16 native bus width reads(when possible) and optional boundary safety fallback
-#define NGP_16BIT_READ 1
+#define NGP_OPTIMIZATION_16BIT_READ
+//#define NGP_OPTIMIZATION_16BIT_WRITE
+//#define NGP_Z80_16BIT_READ
+//#define NGP_32BIT_READ
 #define TLCSMEMREAD_BOUNDARY_SAFETY 0
+#ifndef likely
+#define likely(x) __builtin_expect(!!(x), 1) 
+#endif
+#ifndef unlikely
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#endif
 
 #include "types.h"
 #include "neopopsound.h"
@@ -120,6 +129,75 @@ static inline const unsigned char* get_address(unsigned int addr)
    return 0;  /* Flavor ERROR */
 }
 
+
+// static inline const unsigned char* get_address(unsigned int addr)
+// {
+//    addr&= 0x00FFFFFF;
+// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
+//    if (likely(addr<0x00200000))
+// #else
+//    if (addr<0x00200000)
+// #endif
+//    {
+//       if (addr<0x000008a0)
+//          return &cpuram[addr];
+// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
+//       if (unlikely(addr>0x00003fff && addr<0x00018000))
+// #else
+//       if (addr>0x00003fff && addr<0x00018000)
+// #endif
+//       {
+// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
+//          switch (unlikely(addr) ? addr : 0)
+// #else
+//          switch (addr)  /* Thanks Koyote */
+// #endif
+//          {
+//             case 0x6F80:
+//                mainram[addr-0x00004000] = 0xFF;
+//                break;
+//             case 0x6F80+1:
+//                mainram[addr-0x00004000] = 0x03;
+//                break;
+//             case 0x6F85:
+//                mainram[addr-0x00004000] = 0x00;
+//                break;
+//             case 0x6F82:
+//                mainram[addr-0x00004000] = ngpInputState;
+//                break;
+//             case 0x6DA2:
+//                mainram[addr-0x00004000] = 0x80;
+//                break;
+//          }
+//          return &mainram[addr-0x00004000];
+//       }
+//    }
+//    else
+//    {
+// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
+//      if (likely(addr<0x00400000))
+//          return &mainrom[(addr-0x00200000) /*&cartAddrMask*/];
+//       if(unlikely(addr<0x00800000)) /* Flavor added */
+//          return 0;
+//       if (likely(addr<0x00A00000))
+//          return &mainrom[(addr-(0x00800000-0x00200000))/*&cartAddrMask*/];
+//       if(unlikely(addr<0x00FF0000)) /* Flavor added */
+//          return 0;
+// #else
+//       if (addr<0x00400000)
+//          return &mainrom[(addr-0x00200000) /*&cartAddrMask*/];
+//       if(addr<0x00800000) /* Flavor added */
+//          return 0;
+//       if (addr<0x00A00000)
+//          return &mainrom[(addr-(0x00800000-0x00200000))/*&cartAddrMask*/];
+//       if(addr<0x00FF0000) /* Flavor added */
+//          return 0;
+// #endif
+//       return &cpurom[addr-0x00ff0000];
+//    }
+//    return 0;  /* Flavor ERROR */
+// }
+
 /* read a byte from a memory address (addr) */
 static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 {
@@ -171,7 +249,7 @@ static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 	return 0xFF;
 }
 
-#if NGP_16BIT_READ
+#ifdef NGP_OPTIMIZATION_16BIT_READ
 // ----------------------------
 // Read 16-bit word
 // ----------------------------
@@ -252,9 +330,6 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
             return p[0] | ((unsigned short)p[1] << 8);
         }
     }
-
-    // fallback
-    //return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
 }
 #else
 /* read a word from a memory address (addr) */
@@ -284,6 +359,97 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 }
 #endif
 
+
+#ifdef NGP_32BIT_READ
+static inline unsigned int tlcsMemReadL(unsigned int addr)
+{
+    addr &= 0x00FFFFFF;
+
+    /* RAM: cpuram */
+    if (addr < 0x00200000)
+    {
+        if (addr < 0x000008A0)
+        {
+            /* direct 32-bit read from cpuram (ESP32-S3 RAM safe) */
+            return *(uint32_t *)&cpuram[addr];
+        }
+
+        /* mainram range with special registers */
+        if (addr > 0x00003FFF && addr < 0x00018000)
+        {
+            unsigned int off = addr - 0x00004000;
+
+            switch (addr)  /* Thanks Koyote */
+            {
+                case 0x6F80:
+                    mainram[off] = 0xFF;
+                    break;
+                case 0x6F80 + 1:
+                    mainram[off] = 0x03;
+                    break;
+                case 0x6F85:
+                    mainram[off] = 0x00;
+                    break;
+                case 0x6F82:
+                    mainram[off] = ngpInputState;
+                    break;
+                case 0x6DA2:
+                    mainram[off] = 0x80;
+                    break;
+                default:
+                    break;
+            }
+
+            return *(uint32_t *)&mainram[off];
+        }
+    }
+    else
+    {
+        unsigned int i;
+
+        /* ROM region 0x00200000 - 0x003FFFFF */
+        if (addr < 0x00400000)
+        {
+            const uint8_t *p = &mainrom[addr - 0x00200000];
+            i  = *(p++);
+            i |= (*(p++)) << 8;
+            i |= (*(p++)) << 16;
+            i |= (unsigned int)(*p) << 24;
+            return i;
+        }
+
+        if (addr < 0x00800000) /* Flavor added: unmapped region */
+            return 0;
+
+        /* ROM region 0x00800000 - 0x009FFFFF (mirrored) */
+        if (addr < 0x00A00000)
+        {
+            const uint8_t *p = &mainrom[addr - (0x00800000 - 0x00200000)];
+            i  = *(p++);
+            i |= (*(p++)) << 8;
+            i |= (*(p++)) << 16;
+            i |= (unsigned int)(*p) << 24;
+            return i;
+        }
+
+        if (addr < 0x00FF0000) /* Flavor added: unmapped region */
+            return 0;
+
+        /* cpurom region */
+        {
+            const uint8_t *p = &cpurom[addr - 0x00FF0000];
+            i  = *(p++);
+            i |= (*(p++)) << 8;
+            i |= (*(p++)) << 16;
+            i |= (unsigned int)(*p) << 24;
+            return i;
+        }
+    }
+
+    /* Shouldn't reach here — return 0 as error fallback */
+    return 0;
+}
+#else
 /* read a long word from a memory address (addr) */
 static INLINE unsigned int tlcsMemReadL(unsigned int addr)
 {
@@ -324,6 +490,7 @@ static INLINE unsigned int tlcsMemReadL(unsigned int addr)
    return i;
 #endif
 }
+#endif
 
 /* write a byte (data) to a memory address (addr) */
 static INLINE void tlcsMemWriteB(unsigned int addr, unsigned char data)
@@ -384,6 +551,49 @@ static INLINE void tlcsMemWriteB(unsigned int addr, unsigned char data)
    else if (addr>=0x00800000 && addr<0x00A00000)
       flashChipWrite(addr, data);
 }
+
+#ifdef NGP_16BIT_WRITE
+/* write a word (data) to a memory address (addr) */
+static INLINE void tlcsMemWriteW16(unsigned int addr, unsigned short data)
+{
+    addr &= 0x00FFFFFF;
+
+    if (addr < 0x000008a0)
+    {
+        unsigned char low = (unsigned char)(data); // auto-truncate to 8 bits
+        unsigned char high = (unsigned char)((data >> 8)); // auto-truncate to 8 bits
+        /* segmented I/O region: use byte writes to trigger side effects */
+        tlcsMemWriteB(addr, low);
+        tlcsMemWriteB(addr + 1, high);
+        return;
+    }
+    else if (addr > 0x00003fff && addr < 0x00018000)
+    {
+        /* main RAM: direct 16-bit write for speed */
+        if (addr == 0x87E2 && mainram[0x47F0] != 0xAA)
+            return;  /* disallow writes to GEMODE */
+         uint8_t* p= &mainram[addr - 0x00004000];
+         if (((uintptr_t)p)&0x1)
+         {
+             *(p++) = (unsigned char)(data);
+             *(p)   = (unsigned char)(data >> 8);
+         }
+         else     
+            *(uint16_t *)(mainram + (addr - 0x00004000)) = data;
+        return;
+    }
+    else if ((addr >= 0x00200000 && addr < 0x00400000) ||
+             (addr >= 0x00800000 && addr < 0x00A00000))
+    {
+        /* flash regions: still need to write two bytes */
+        unsigned char low = (unsigned char)(data); // auto-truncate to 8 bits
+        unsigned char high = (unsigned char)((data >> 8)); // auto-truncate to 8 bits
+        flashChipWrite(addr, low);
+        flashChipWrite(addr + 1, high);
+        return;
+    }
+}
+#endif
 
 #ifdef __cplusplus
 }
