@@ -1,3 +1,4 @@
+Succesful Optimizations: NGP_OPTIMIZATION_16BIT_READ (-.10ms/frame in reference title)
 # Cardputer Game Station
 
 ![NES emulator screen captures on the M5Stack Cardputer](nes_emulator_s.jpg)
