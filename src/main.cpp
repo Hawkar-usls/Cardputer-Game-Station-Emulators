@@ -21,8 +21,18 @@
 #include "last_game.h"
 #define RETRO_COMPAT_IMPLEMENTATION
 #include "ngp/race/retro_compat.h"
+#include "esp_task_wdt.h"
 
 void setup() {
+  // Copied from Gameboy Enhanced Firmware setup
+#ifdef DISABLE_WATCHDOGS
+  M5.Log.printf("Disabling all WatchDogs...\n");
+  esp_task_wdt_deinit(); // fully disables and removes TWDT
+  disableCore0WDT(); // disable WDT
+  disableCore1WDT(); // disable WDT
+  esp_task_wdt_delete(NULL); // disable WDT on this therad - legacy
+#endif
+
   auto cfg = M5.config();
   cfg.output_power = true;
   M5Cardputer.begin(cfg);
