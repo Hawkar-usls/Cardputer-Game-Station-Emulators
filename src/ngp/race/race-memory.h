@@ -16,7 +16,7 @@
 #endif
 
 // Additions by MrPaul for 16 native bus width reads(when possible) and optional boundary safety fallback
-#define NGP_OPTIMIZATION_16BIT_READ
+// #define NGP_OPTIMIZATION_16BIT_READ
 //#define NGP_OPTIMIZATION_16BIT_WRITE
 //#define NGP_Z80_16BIT_READ
 //#define NGP_32BIT_READ
@@ -129,75 +129,6 @@ static inline const unsigned char* get_address(unsigned int addr)
    return 0;  /* Flavor ERROR */
 }
 
-
-// static inline const unsigned char* get_address(unsigned int addr)
-// {
-//    addr&= 0x00FFFFFF;
-// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
-//    if (likely(addr<0x00200000))
-// #else
-//    if (addr<0x00200000)
-// #endif
-//    {
-//       if (addr<0x000008a0)
-//          return &cpuram[addr];
-// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
-//       if (unlikely(addr>0x00003fff && addr<0x00018000))
-// #else
-//       if (addr>0x00003fff && addr<0x00018000)
-// #endif
-//       {
-// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
-//          switch (unlikely(addr) ? addr : 0)
-// #else
-//          switch (addr)  /* Thanks Koyote */
-// #endif
-//          {
-//             case 0x6F80:
-//                mainram[addr-0x00004000] = 0xFF;
-//                break;
-//             case 0x6F80+1:
-//                mainram[addr-0x00004000] = 0x03;
-//                break;
-//             case 0x6F85:
-//                mainram[addr-0x00004000] = 0x00;
-//                break;
-//             case 0x6F82:
-//                mainram[addr-0x00004000] = ngpInputState;
-//                break;
-//             case 0x6DA2:
-//                mainram[addr-0x00004000] = 0x80;
-//                break;
-//          }
-//          return &mainram[addr-0x00004000];
-//       }
-//    }
-//    else
-//    {
-// #ifdef NGP_BRANCH_HINTS_GET_ADDRESS
-//      if (likely(addr<0x00400000))
-//          return &mainrom[(addr-0x00200000) /*&cartAddrMask*/];
-//       if(unlikely(addr<0x00800000)) /* Flavor added */
-//          return 0;
-//       if (likely(addr<0x00A00000))
-//          return &mainrom[(addr-(0x00800000-0x00200000))/*&cartAddrMask*/];
-//       if(unlikely(addr<0x00FF0000)) /* Flavor added */
-//          return 0;
-// #else
-//       if (addr<0x00400000)
-//          return &mainrom[(addr-0x00200000) /*&cartAddrMask*/];
-//       if(addr<0x00800000) /* Flavor added */
-//          return 0;
-//       if (addr<0x00A00000)
-//          return &mainrom[(addr-(0x00800000-0x00200000))/*&cartAddrMask*/];
-//       if(addr<0x00FF0000) /* Flavor added */
-//          return 0;
-// #endif
-//       return &cpurom[addr-0x00ff0000];
-//    }
-//    return 0;  /* Flavor ERROR */
-// }
-
 /* read a byte from a memory address (addr) */
 static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 {
@@ -249,87 +180,14 @@ static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 	return 0xFF;
 }
 
-#ifdef NGP_OPTIMIZATION_16BIT_READ
-// ----------------------------
-// Read 16-bit word
-// ----------------------------
+#if defined NGP_OPTIMIZATION_16BIT_READ
 static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 {
-    addr &= 0x00FFFFFF;
+    register unsigned short i;
+    const unsigned char *gA = get_address(addr);
+    if (!gA) return 0;
 
-    // ----------------------
-    // SYSTEM MEMORY (RAM)
-    // ----------------------
-    if (addr < 0x00200000)
-    {
-        if (addr < 0x000008A0)
-        {
-            if (addr == 0xBC)
-                ngpSoundExecute();
-
-            // direct 16-bit read from cpuram
-            return *((unsigned short*)&cpuram[addr]);
-        }
-        else if (addr > 0x00003FFF && addr < 0x00018000)
-        {
-            unsigned char *r = mainram + (addr - 0x00004000);
-
-            // special registers
-            switch (addr)
-            {
-                case 0x6DA2: return *((unsigned short*)r);
-                case 0x6F80: return 0x80FF;
-                case 0x6F85: return *((unsigned short*)r);
-                case 0x6F82: return ngpInputState;
-                default: break;
-            }
-
-            return *((unsigned short*)r);
-        }
-    }
-
-    // ----------------------
-    // ROM/XIP memory
-    // ----------------------
-    else
-    {
-        const unsigned char *p;
-
-        if (addr < 0x00400000)
-            p = mainrom + (addr - 0x00200000);
-        else if (addr < 0x00800000)
-            return 0xFFFF;
-        else if (addr < 0x00A00000)
-            p = mainrom + (addr - (0x00800000 - 0x00200000));
-        else if (addr < 0x00FF0000)
-            return 0xFFFF;
-        else
-            p = cpurom + (addr - 0x00FF0000);
-
-#if TLCSMEMREAD_BOUNDARY_SAFETY
-        // check if word crosses region boundary
-        if (((addr < 0x00200000) && (addr+1) >= 0x00200000) ||
-            ((addr < 0x00400000) && (addr+1) >= 0x00400000) ||
-            ((addr < 0x00800000) && (addr+1) >= 0x00800000) ||
-            ((addr < 0x00A00000) && (addr+1) >= 0x00A00000) ||
-            ((addr < 0x00FF0000) && (addr+1) >= 0x00FF0000))
-        {
-            return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
-        }
-#endif
-
-        // check alignment
-        if (((uintptr_t)p & 1) == 0)
-        {
-            // aligned 16-bit read
-            return *((const unsigned short*)p);
-        }
-        else
-        {
-            // unaligned: read two bytes individually
-            return p[0] | ((unsigned short)p[1] << 8);
-        }
-    }
+   return (gA[0] | (gA[1] << 8));
 }
 #else
 /* read a word from a memory address (addr) */
