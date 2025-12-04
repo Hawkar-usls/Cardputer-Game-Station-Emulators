@@ -1,5 +1,6 @@
-Succesful Optimizations: NGP_OPTIMIZATION_16BIT_READ (-.15ms/frame in reference title, Metal Slug 1 level 1))
-                         NGP_OPTIMIZATION_JUMPTABLE (-.10ms/frame in reference title, Metal Slug 1 level 1)
+Succesful Optimizations:
+* NGP_OPTIMIZATION_16BIT_READ (-.15ms/frame in reference title, Metal Slug 1 level 1))
+* NGP_OPTIMIZATION_JUMPTABLE (-.10ms/frame in reference title, Metal Slug 1 level 1)
 # Cardputer Game Station
 
 ![NES emulator screen captures on the M5Stack Cardputer](nes_emulator_s.jpg)
