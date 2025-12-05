@@ -10,14 +10,9 @@ extern "C" {
 extern bool gbcFullScreen;
 extern int  gbcZoomPercent;
 extern int  gbPalette;
-extern uint32_t lastPadState;
 
 extern "C" int gbc_input_poll(void)
-{
-    if (!share::shouldPollInput()) {
-        return lastPadState;
-    }
-    
+{   
     const int dummy_ret = -1; 
 
     M5Cardputer.update();
@@ -124,6 +119,5 @@ extern "C" int gbc_input_poll(void)
         return dummy_ret;
     }
 
-    lastPadState = pad;
     return pad;
 }

@@ -12,14 +12,10 @@ static inline bool key(char c) {
 }
 
 void cardputer_input_init() {
-    // nothing for now
+    share::detectI2cPad();
 }
 
 void cardputer_read_input(bool isGG) {
-    if (!share::shouldPollInput()) {
-        return;
-    }
-
     int smsButtons = 0; // -> input.pad[0]
     int smsSystem  = 0; // -> input.system
 
@@ -66,6 +62,16 @@ void cardputer_read_input(bool isGG) {
         video_compute_scaler_full();
         input.pad[0] = 0; input.system = 0;
         return;
+    }
+
+    if (share::hasI2cPad()) {
+        // I2C Pad handling
+        int i2cPadState = share::pollI2cPad();
+        if (i2cPadState & INPUT_LEFT)    smsButtons |= INPUT_LEFT;
+        if (i2cPadState & INPUT_RIGHT)   smsButtons |= INPUT_RIGHT;
+        if (i2cPadState & INPUT_UP)      smsButtons |= INPUT_UP;
+        if (i2cPadState & INPUT_DOWN)    smsButtons |= INPUT_DOWN;
+        if (i2cPadState & INPUT_BUTTON1) smsButtons |= INPUT_BUTTON1;
     }
 
     // ---------- Mapping  ----------

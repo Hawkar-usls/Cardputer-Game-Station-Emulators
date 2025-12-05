@@ -36,8 +36,6 @@ static inline void set_button(int idx, bool pressed) {
 
 /* Polling cardputer keyboard */
 extern "C" void genesis_controller_poll() {
-  if (!share::shouldPollInput()) return;
-
   M5Cardputer.update();
   Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
