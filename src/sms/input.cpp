@@ -12,7 +12,6 @@ static inline bool key(char c) {
 }
 
 void cardputer_input_init() {
-    share::detectI2cPad();
 }
 
 void cardputer_read_input(bool isGG) {
