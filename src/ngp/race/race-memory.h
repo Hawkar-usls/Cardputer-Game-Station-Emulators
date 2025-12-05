@@ -183,7 +183,6 @@ static INLINE unsigned char tlcsMemReadB(unsigned int addr)
 #if defined NGP_OPTIMIZATION_16BIT_READ
 static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 {
-    register unsigned short i;
     const unsigned char *gA = get_address(addr);
     if (!gA) return 0;
 
