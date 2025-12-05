@@ -62,17 +62,7 @@ void cardputer_read_input(bool isGG) {
         input.pad[0] = 0; input.system = 0;
         return;
     }
-
-    if (share::hasI2cPad()) {
-        // I2C Pad handling
-        int i2cPadState = share::pollI2cPad();
-        if (i2cPadState & INPUT_LEFT)    smsButtons |= INPUT_LEFT;
-        if (i2cPadState & INPUT_RIGHT)   smsButtons |= INPUT_RIGHT;
-        if (i2cPadState & INPUT_UP)      smsButtons |= INPUT_UP;
-        if (i2cPadState & INPUT_DOWN)    smsButtons |= INPUT_DOWN;
-        if (i2cPadState & INPUT_BUTTON1) smsButtons |= INPUT_BUTTON1;
-    }
-
+    
     // ---------- Mapping  ----------
     if (key(CARDPUTER_LEFT_1) || key(CARDPUTER_LEFT_2)) smsButtons |= INPUT_LEFT;
     if (key(CARDPUTER_RIGHT_1) || key(CARDPUTER_RIGHT_2)) smsButtons |= INPUT_RIGHT;
