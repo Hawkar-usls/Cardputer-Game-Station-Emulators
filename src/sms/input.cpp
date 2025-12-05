@@ -12,14 +12,9 @@ static inline bool key(char c) {
 }
 
 void cardputer_input_init() {
-    // nothing for now
 }
 
 void cardputer_read_input(bool isGG) {
-    if (!share::shouldPollInput()) {
-        return;
-    }
-
     int smsButtons = 0; // -> input.pad[0]
     int smsSystem  = 0; // -> input.system
 
@@ -67,7 +62,7 @@ void cardputer_read_input(bool isGG) {
         input.pad[0] = 0; input.system = 0;
         return;
     }
-
+    
     // ---------- Mapping  ----------
     if (key(CARDPUTER_LEFT_1) || key(CARDPUTER_LEFT_2)) smsButtons |= INPUT_LEFT;
     if (key(CARDPUTER_RIGHT_1) || key(CARDPUTER_RIGHT_2)) smsButtons |= INPUT_RIGHT;

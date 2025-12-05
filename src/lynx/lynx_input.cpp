@@ -9,15 +9,10 @@
 // from lynx_display.cpp
 extern bool lynxFullScreen;
 extern int  lynxZoomPercent;
-extern uint32_t lastPadState;
 
 extern "C" int lynx_input_poll(void)
 {
     const int dummy_ret = -1;
-
-    if (!share::shouldPollInput()) {
-        return lastPadState;
-    }
 
     M5Cardputer.update();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
@@ -109,6 +104,5 @@ extern "C" int lynx_input_poll(void)
         return dummy_ret;
     }
 
-    lastPadState = pad;
     return (int)pad;
 }
