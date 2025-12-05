@@ -222,8 +222,8 @@ void run_ngp(const uint8_t* rom_base, size_t rom_size, int machine)
       #else
               tlcs_execute((CPU_CLOCK_HZ) / 60);
       #endif
-      ngc_input_poll();
-      taskYIELD();
+      ngc_input_poll(); // use if not using input task
+      // taskYIELD();
 
       // Pacing 60 Hz
       uint32_t emuUs = micros() - t0;
