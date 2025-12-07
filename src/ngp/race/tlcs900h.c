@@ -1,4 +1,3 @@
-
 //---------------------------------------------------------------------------
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -28,6 +27,7 @@
 //  - Implementation MULA operation incomplete (V flag)
 //
 //////////////////////////////////////////////////////////////////////
+
 
 #include <stdlib.h>
 #include <time.h>
@@ -205,7 +205,6 @@ unsigned int   **cregsL   = NULL;
 int state;
 int checkstate;
 int DMAstate;
-
 // Clock multiplier to reflect the CPU speed
 // 1 - 6144 kHz
 // 2 - 3072 kHz
@@ -244,7 +243,6 @@ static INLINE unsigned char mem_readB(unsigned int addr)
         memoryCycles++;
     return tlcsMemReadB(addr);
 }
-
 
 static INLINE unsigned short mem_readW(unsigned int addr)
 {
@@ -7061,7 +7059,6 @@ int decode80(void)  // (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
     mem = *cregsL[opcode&7];
     memB = mem_readB(mem);
     lastbyte = readbyte();
-
     return decode_table80[lastbyte]();
 }
 
@@ -8335,10 +8332,7 @@ void tlcs_execute(int cycles)
 
     while(cycles > 0)
     {
-        
-
         for (elapsed = tlcs_step(); elapsed < (515 >> (tlcsClockMulti - 1)); elapsed += tlcs_step());
-       
         tlcsTimers(elapsed);
         elapsed *= tlcsClockMulti;
         soundStep(elapsed);
