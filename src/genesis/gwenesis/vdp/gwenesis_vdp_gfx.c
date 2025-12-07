@@ -959,17 +959,15 @@ void draw_sprites(int line)
  ******************************************************************************/
 uint16_t md_cram_to_rgb565(uint16_t c)
 {
-  // Genesis CRAM: 3 bits par canal
-  int r3 = (c >> 9) & 0x7;  // R
-  int g3 = (c >> 1) & 0x7;  // G
-  int b3 = (c >> 5) & 0x7;  // B
+    uint16_t r3 = (c >> 1) & 0x7;  // bits 1..3
+    uint16_t g3 = (c >> 5) & 0x7;  // bits 5..7
+    uint16_t b3 = (c >> 9) & 0x7;  // bits 9..11
 
-  // 3->5/6 bits
-  int r5 = (r3 << 2) | (r3 >> 1);
-  int g6 = (g3 << 3) | g3;
-  int b5 = (b3 << 2) | (b3 >> 1);
+    uint16_t r5 = (r3 << 2) | (r3 >> 1);  // 0..7 -> 0..31
+    uint16_t g6 = (g3 << 3) | (g3 >> 0);  // 0..7 -> 0..63
+    uint16_t b5 = (b3 << 2) | (b3 >> 1);  // 0..7 -> 0..31
 
-  return (uint16_t)((r5 << 11) | (g6 << 5) | b5);
+    return (uint16_t)((r5 << 11) | (g6 << 5) | b5);
 }
 
 static inline uint16_t dim565(uint16_t c) {
