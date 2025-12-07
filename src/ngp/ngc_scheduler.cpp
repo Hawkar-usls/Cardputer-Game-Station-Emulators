@@ -51,7 +51,7 @@ static void taskVideo(void*){
       g_frame_ready = 0;
       graphics_paint(1);
     } else {
-      vTaskDelay(3);
+      vTaskDelay(2);
     }
   }
 }
