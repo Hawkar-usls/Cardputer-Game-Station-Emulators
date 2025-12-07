@@ -190,7 +190,19 @@ static INLINE unsigned short tlcsMemReadW(unsigned int addr)
 
    return i;
 #else
+#ifdef NGP_OPTIMIZATION_16BIT_READ
+   const unsigned char *gA;
+   gA = get_address(addr);
+
+   if(gA == 0)
+      return 0;
+   
+   if (((unsigned int)gA) & 1)
+      return (*(gA)) | (*(gA + 1) << 8);
+   return *(unsigned short*)gA;
+#else
    return tlcsMemReadB(addr) | (tlcsMemReadB(addr+1) << 8);
+#endif
 #endif
 }
 
