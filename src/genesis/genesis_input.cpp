@@ -61,9 +61,6 @@ extern "C" void genesis_controller_poll() {
         left    = left    || (padState & share::PAD_LEFT);
         right   = right   || (padState & share::PAD_RIGHT);
         btnA    = btnA    || (padState & share::PAD_A);
-        btnB    = btnB    || (padState & share::PAD_B);
-        // pas de C sur le pad I2C
-        btnStart= btnStart|| (padState & share::PAD_START);
     }
 
     // --------- SCREEN MODE / ZOOM ----------
@@ -129,7 +126,7 @@ extern "C" void genesis_controller_poll() {
     btnC    = btnC    || btnCKey;
     btnStart= btnStart|| btnStartKey;
 
-    // --------- Pousser l'état final vers Gwenesis ----------
+    // Push states to Gwenesis
     set_button(BTN_UP,    up);
     set_button(BTN_DOWN,  down);
     set_button(BTN_LEFT,  left);
