@@ -38,22 +38,32 @@ void TCA8418KeyboardReader::begin()
     _tca8418->enableInterrupts();
 }
 
-// Reworked to ignore ISR and poll directly all the key events
+// Reworked to ignore ISR and poll directly the key events
 void TCA8418KeyboardReader::update()
 {
     if (!_tca8418) return;
 
-    while (true) {
+    uint8_t ec = _tca8418->readRegister8(TCA8418_REG_KEY_LCK_EC);
+    uint8_t event_count = ec & 0x0F;  // 4 bits low = event count
+
+    if (event_count == 0) {
+        return;
+    }
+
+    // Limit the number of events processed per update
+    static constexpr uint8_t MAX_EVENTS_PER_UPDATE = 4;
+    uint8_t to_process = (event_count > MAX_EVENTS_PER_UPDATE)
+                           ? MAX_EVENTS_PER_UPDATE
+                           : event_count;
+
+    while (to_process--) {
         uint8_t eventRaw = _tca8418->getEvent();
-        if (eventRaw == 0) break;
-        if ((eventRaw & 0x7F) == 0) continue;
+        if ((eventRaw & 0x7F) == 0) continue; 
 
         KeyEventRaw_t ev = get_key_event_raw(eventRaw);
         remap(ev);
         update_key_list(ev);
     }
-
-    (void)_tca8418->readRegister8(TCA8418_REG_KEY_LCK_EC);
 }
 
 TCA8418KeyboardReader::KeyEventRaw_t TCA8418KeyboardReader::get_key_event_raw(const uint8_t& eventRaw)
