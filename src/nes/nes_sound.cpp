@@ -32,7 +32,7 @@ int osd_init_sound() {
   cfg.dma_buf_len    = 512;     // buffers DMA
   cfg.dma_buf_count  = 8;
   cfg.task_priority  = 4;       // high priority
-  cfg.task_pinned_core = 1;     // pin to core 1 (avoid conflict with other tasks)
+  cfg.task_pinned_core = 0;     // pin to core 0 (avoid conflict with main task)
   M5Cardputer.Speaker.config(cfg);
 
   if (!M5Cardputer.Speaker.isRunning()) {

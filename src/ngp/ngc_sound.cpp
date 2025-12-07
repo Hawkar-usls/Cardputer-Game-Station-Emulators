@@ -80,7 +80,7 @@ void ngc_sound_init(void) {
     cfg.dma_buf_len       = 512;
     cfg.dma_buf_count     = 8;
     cfg.task_priority     = 4;
-    cfg.task_pinned_core  = 1;
+    cfg.task_pinned_core  = 0;
     M5Cardputer.Speaker.config(cfg);
     M5Cardputer.Speaker.begin();
   }

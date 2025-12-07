@@ -113,7 +113,7 @@ void genesis_sound_init() {
     s_audioQ = xQueueCreate(AUDIO_Q_DEPTH, sizeof(AudioMsg));
   }
   if (!s_audioTask) {
-    xTaskCreatePinnedToCore(audio_task, "AudioTask", 2048, nullptr, 6, &s_audioTask, 1);
+    xTaskCreatePinnedToCore(audio_task, "AudioTask", 2048, nullptr, 6, &s_audioTask, 0);
   }
 }
 

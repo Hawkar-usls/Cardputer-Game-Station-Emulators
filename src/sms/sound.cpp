@@ -26,7 +26,7 @@ void sms_audio_init(){
   cfg.dma_buf_len       = 512;
   cfg.dma_buf_count     = 8;
   cfg.task_priority     = 4;
-  cfg.task_pinned_core  = 1;
+  cfg.task_pinned_core  = 0;
   M5Cardputer.Speaker.config(cfg);
 
   if (!s_buf[0]) {
@@ -95,7 +95,7 @@ static void audio_task(void*){
 void sms_audio_start_task(){
   gRunAudio = true;
   if (!gAudioTask){
-    xTaskCreatePinnedToCore(audio_task, "audio", 4096, nullptr, 6, &gAudioTask, 1);
+    xTaskCreatePinnedToCore(audio_task, "audio", 4096, nullptr, 6, &gAudioTask, 0);
   }
 }
 
