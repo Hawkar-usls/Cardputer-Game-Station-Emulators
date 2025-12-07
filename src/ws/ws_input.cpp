@@ -16,6 +16,16 @@ extern "C" int ws_input_poll(int mode)
 
   share::checkCommonInput(status);
 
+  // I2C PAD (M5Stack JoyV2)
+  if (share::hasI2cPad()) {
+      int i2cPad = share::pollI2cPad();
+      if (i2cPad & share::PAD_LEFT)  state |= WS_X4; 
+      if (i2cPad & share::PAD_RIGHT) state |= WS_X2; 
+      if (i2cPad & share::PAD_UP)    state |= WS_X1; 
+      if (i2cPad & share::PAD_DOWN)  state |= WS_X3;
+      if (i2cPad & share::PAD_A)     state |= WS_A;
+  }
+
   // Directional pad
   const bool left  = M5Cardputer.Keyboard.isKeyPressed('e');
   const bool right = M5Cardputer.Keyboard.isKeyPressed('z') || M5Cardputer.Keyboard.isKeyPressed('s');
@@ -58,6 +68,7 @@ extern "C" int ws_input_poll(int mode)
 
   //  Boutons
   if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) && mode == 0) state |= WS_A;       // A
+  if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2) && mode == 0) state |= WS_A;       // A
   if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B) && mode == 0) state |= WS_B;       // B
 
   if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) state |= WS_START;  // START 

@@ -50,6 +50,11 @@ The built-in **Cardputer keyboard** is used for all controls:
 
 The `j` key is also bound as Button A to allow an alternative layout for player preference.
 
+You can alternatively use the M5Stack JoyV2, **just plug it in before launching a game** and it will work automatically.
+
+![A photo of the M5Stack Joystick Version 2](m5stack_joyv2.jpg)
+
+
 ## Zoom Mode
 
 The Zoom Mode allows you to **dynamically adjust the display scale of games** on the Cardputer’s screen.

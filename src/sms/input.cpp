@@ -23,6 +23,16 @@ void cardputer_read_input(bool isGG) {
 
     share::checkCommonInput(status);
 
+    // I2C PAD (M5Stack JoyV2)
+    if (share::hasI2cPad()) {
+        int i2cPad = share::pollI2cPad();
+        if (i2cPad & share::PAD_LEFT)  smsButtons |= INPUT_LEFT;
+        if (i2cPad & share::PAD_RIGHT) smsButtons |= INPUT_RIGHT;
+        if (i2cPad & share::PAD_UP)    smsButtons |= INPUT_UP;
+        if (i2cPad & share::PAD_DOWN)  smsButtons |= INPUT_DOWN;
+        if (i2cPad & share::PAD_A)     smsButtons |= INPUT_BUTTON1;
+    }
+
     // --- fullscreen / zoom cycle ---
     if (M5Cardputer.Keyboard.isChange() && key(CARDPUTER_SCREEN_TOGGLE)) {
         if (!fullscreen) {

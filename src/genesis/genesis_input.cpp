@@ -36,61 +36,108 @@ static inline void set_button(int idx, bool pressed) {
 
 /* Polling cardputer keyboard */
 extern "C" void genesis_controller_poll() {
-  M5Cardputer.update();
-  Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
+    M5Cardputer.update();
+    Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
-  share::checkCommonInput(ks);
+    share::checkCommonInput(ks);
 
-  // Screen mode toggle with '\'
-  if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
-    if (!fullscreenMode) {
-      fullscreenMode = true;
-      genesisZoomPercent = 100;
-    } else {
-      genesisZoomPercent += 10;
-      if (genesisZoomPercent > 150) {
-        genesisZoomPercent = 100;
-        fullscreenMode = false;
-      }
+    // --------- États cumulés des boutons (I2C + clavier) ----------
+    bool up      = false;
+    bool down    = false;
+    bool left    = false;
+    bool right   = false;
+    bool btnA    = false;
+    bool btnB    = false;
+    bool btnC    = false;
+    bool btnStart= false;
+
+    // --------- I2C PAD ---------
+    if (share::hasI2cPad()) {
+        uint32_t padState = share::pollI2cPad();
+
+        // Fusion I2C
+        up      = up      || (padState & share::PAD_UP);
+        down    = down    || (padState & share::PAD_DOWN);
+        left    = left    || (padState & share::PAD_LEFT);
+        right   = right   || (padState & share::PAD_RIGHT);
+        btnA    = btnA    || (padState & share::PAD_A);
+        btnB    = btnB    || (padState & share::PAD_B);
+        // pas de C sur le pad I2C
+        btnStart= btnStart|| (padState & share::PAD_START);
     }
-    return;
-  }
 
-  // Zoom +/−
-  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
-    if (!fullscreenMode) fullscreenMode = true;
-    genesisZoomPercent += 1;
-    if (genesisZoomPercent > 150) genesisZoomPercent = 150;
-    return;
-  }
-  if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
-    if (!fullscreenMode) fullscreenMode = true;
-    genesisZoomPercent -= 1;
-    if (genesisZoomPercent < 100) genesisZoomPercent = 100;
-    return;
-  }
+    // --------- SCREEN MODE / ZOOM ----------
+    if (M5Cardputer.Keyboard.isChange() &&
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
 
-  // Arrow keys: ZQSD / ,./
-  const bool left  = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2);
-  const bool right = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2);
-  const bool up    = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2);
-  const bool down  = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3);
+        if (!fullscreenMode) {
+            fullscreenMode = true;
+            genesisZoomPercent = 100;
+        } else {
+            genesisZoomPercent += 10;
+            if (genesisZoomPercent > 150) {
+                genesisZoomPercent = 100;
+                fullscreenMode = false;
+            }
+        }
+        return;
+    }
 
-  // Buttons A/B/C to j/k/l
-  const bool btnA     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1);
-  const bool btnB     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B);
-  const bool btnC     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2);
-  const bool btnStart = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START);
+    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
+        if (!fullscreenMode) fullscreenMode = true;
+        genesisZoomPercent += 1;
+        if (genesisZoomPercent > 150) genesisZoomPercent = 150;
+        return;
+    }
+    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
+        if (!fullscreenMode) fullscreenMode = true;
+        genesisZoomPercent -= 1;
+        if (genesisZoomPercent < 100) genesisZoomPercent = 100;
+        return;
+    }
 
-  // Apply state to the 8 buttons
-  set_button(BTN_UP,    up);
-  set_button(BTN_DOWN,  down);
-  set_button(BTN_LEFT,  left);
-  set_button(BTN_RIGHT, right);
-  set_button(BTN_A,     btnA);
-  set_button(BTN_B,     btnB);
-  set_button(BTN_C,     btnC);
-  set_button(BTN_START, btnStart);
+    // --------- CLAVIER : ZQSD / ,./ ----------
+    const bool leftKey  =
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) ||
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2);
+
+    const bool rightKey =
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) ||
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2);
+
+    const bool upKey =
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) ||
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2);
+
+    const bool downKey =
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) ||
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) ||
+        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3);
+
+    const bool btnAKey     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1);
+    const bool btnBKey     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B);
+    const bool btnCKey     = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2);
+    const bool btnStartKey = M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START);
+
+    // Fusion clavier + I2C
+    left    = left    || leftKey;
+    right   = right   || rightKey;
+    up      = up      || upKey;
+    down    = down    || downKey;
+    btnA    = btnA    || btnAKey;
+    btnB    = btnB    || btnBKey;
+    btnC    = btnC    || btnCKey;
+    btnStart= btnStart|| btnStartKey;
+
+    // --------- Pousser l'état final vers Gwenesis ----------
+    set_button(BTN_UP,    up);
+    set_button(BTN_DOWN,  down);
+    set_button(BTN_LEFT,  left);
+    set_button(BTN_RIGHT, right);
+    set_button(BTN_A,     btnA);
+    set_button(BTN_B,     btnB);
+    set_button(BTN_C,     btnC);
+    set_button(BTN_START, btnStart);
 }
 
 /* Called by Gwenesis to poll button states */

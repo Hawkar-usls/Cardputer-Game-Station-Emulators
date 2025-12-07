@@ -23,6 +23,16 @@ void pce_input_read(uint8_t joypads[8])
 
   share::checkCommonInput(status);
 
+  // I2C PAD (M5Stack JoyV2)
+  if (share::hasI2cPad()) {
+      int i2cPad = share::pollI2cPad();
+      if (i2cPad & share::PAD_LEFT)  buttons |= JOY_LEFT;
+      if (i2cPad & share::PAD_RIGHT) buttons |= JOY_RIGHT;
+      if (i2cPad & share::PAD_UP)    buttons |= JOY_UP;
+      if (i2cPad & share::PAD_DOWN)  buttons |= JOY_DOWN;
+      if (i2cPad & share::PAD_A)     buttons |= JOY_A;
+  }
+
   // Toggle / fullscreen
   if (M5Cardputer.Keyboard.isChange() &&
       M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {

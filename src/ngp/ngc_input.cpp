@@ -40,6 +40,16 @@ extern "C" uint32_t ngc_input_poll(void) {
   ngpInputState = 0x00;
 #endif
 
+  // I2C PAD (M5Stack JoyV2)
+  if (share::hasI2cPad()) {
+      int i2cPad = share::pollI2cPad();
+      if (i2cPad & share::PAD_LEFT)  ngpInputState |= NGP_BTN_LEFT;
+      if (i2cPad & share::PAD_RIGHT) ngpInputState |= NGP_BTN_RIGHT;
+      if (i2cPad & share::PAD_UP)    ngpInputState |= NGP_BTN_UP;
+      if (i2cPad & share::PAD_DOWN)  ngpInputState |= NGP_BTN_DOWN;
+      if (i2cPad & share::PAD_A)     ngpInputState |= NGP_BTN_A;
+  }
+
   if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
     ngpFullscreen = !ngpFullscreen;
   }

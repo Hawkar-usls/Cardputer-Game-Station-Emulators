@@ -42,4 +42,21 @@ namespace share
 {
     bool shouldPollInput(); 
     void checkCommonInput(const Keyboard_Class::KeysState& status);
+
+    // I2C PAD (M5Stack JoyV2)
+    void detectI2cPad();
+    bool hasI2cPad();
+    uint32_t pollI2cPad();
+
+    // Bitmask
+    enum PadBits : uint32_t {
+        PAD_UP      = 1u << 0,
+        PAD_DOWN    = 1u << 1,
+        PAD_LEFT    = 1u << 2,
+        PAD_RIGHT   = 1u << 3,
+        PAD_A       = 1u << 4,
+        PAD_B       = 1u << 5,
+        PAD_START   = 1u << 6,
+        PAD_SELECT  = 1u << 7,
+    };
 }

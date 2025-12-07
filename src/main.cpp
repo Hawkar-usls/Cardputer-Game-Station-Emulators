@@ -22,6 +22,7 @@
 #define RETRO_COMPAT_IMPLEMENTATION
 #include "ngp/race/retro_compat.h"
 #include "esp_task_wdt.h"
+#include "share/input.h"
 
 void setup() {
   // Set high priority for the current task (where the emulator will run)
@@ -174,6 +175,9 @@ void setup() {
   std::string romName = (pos == std::string::npos) ? romPath : romPath.substr(pos + 1);
 
   printf("HEAP BEFORE EMU: %u bytes\n", esp_get_free_heap_size());
+
+  // Initialize I2C M5Stack JoyV2 if any
+  share::detectI2cPad();
   
   // Run the emulator
   if (ext == ROM_TYPE_NES) {

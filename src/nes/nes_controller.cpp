@@ -16,6 +16,16 @@ uint32_t controller_read_input() {
     Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 
     share::checkCommonInput(status);
+
+    // I2C PAD (M5Stack JoyV2)
+    if (share::hasI2cPad()) {
+        int i2cPad = share::pollI2cPad();
+        if (i2cPad & share::PAD_LEFT)  value ^= (1 << 2); // left
+        if (i2cPad & share::PAD_RIGHT) value ^= (1 << 3); // right
+        if (i2cPad & share::PAD_UP)    value ^= (1 << 0); // up
+        if (i2cPad & share::PAD_DOWN)  value ^= (1 << 1); // down
+        if (i2cPad & share::PAD_A)     value ^= (1 << 6); // A
+    }
     
     // Zoom control and screen mode toggle
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {

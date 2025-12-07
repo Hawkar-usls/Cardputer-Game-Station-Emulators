@@ -21,6 +21,16 @@ extern "C" int lynx_input_poll(void)
 
     uint32_t pad = 0x00;
 
+    // I2C PAD (M5Stack JoyV2)
+    if (share::hasI2cPad()) {
+        int i2cPad = share::pollI2cPad();
+        if (i2cPad & share::PAD_LEFT)  pad |= BUTTON_LEFT;
+        if (i2cPad & share::PAD_RIGHT) pad |= BUTTON_RIGHT;
+        if (i2cPad & share::PAD_UP)    pad |= BUTTON_UP;
+        if (i2cPad & share::PAD_DOWN)  pad |= BUTTON_DOWN;
+        if (i2cPad & share::PAD_A)     pad |= BUTTON_A;
+    }
+
     // ================== SCREEN MODE (touche '\') ==================
     if (M5Cardputer.Keyboard.isChange() &&
         M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {

@@ -22,6 +22,16 @@ extern "C" int gbc_input_poll(void)
 
     int pad = 0x00;
 
+    // I2C PAD (M5Stack JoyV2)
+    if ( share::hasI2cPad()) {
+        int i2cPad = share::pollI2cPad();
+        if (i2cPad & share::PAD_LEFT)  pad |= GB_PAD_LEFT;
+        if (i2cPad & share::PAD_RIGHT) pad |= GB_PAD_RIGHT;
+        if (i2cPad & share::PAD_UP)    pad |= GB_PAD_UP;
+        if (i2cPad & share::PAD_DOWN)  pad |= GB_PAD_DOWN;
+        if (i2cPad & share::PAD_A)     pad |= GB_PAD_A;
+    }
+
     // ================== SCREEN MODE ==================
 
     // Screen mode
