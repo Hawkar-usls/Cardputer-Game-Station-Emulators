@@ -24,6 +24,9 @@
 #include "esp_task_wdt.h"
 
 void setup() {
+  // Set high priority for the current task (where the emulator will run)
+  vTaskPrioritySet(NULL, 19);
+
   // Copied from Gameboy Enhanced Firmware setup
 #ifdef DISABLE_WATCHDOGS
   M5.Log.printf("Disabling all WatchDogs...\n");
