@@ -36,12 +36,19 @@ static inline void set_button(int idx, bool pressed) {
 
 /* Polling cardputer keyboard */
 extern "C" void genesis_controller_poll() {
+
+    // limit polling rate
+    if (share::shouldPollInput() == false) {
+        return;
+    }
+
     M5Cardputer.update();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
+    // ------ Common input (volume, brightness...) -------
     share::checkCommonInput(ks);
 
-    // --------- États cumulés des boutons (I2C + clavier) ----------
+    // --------- Cumulated I2C + keyboard ----------
     bool up      = false;
     bool down    = false;
     bool left    = false;

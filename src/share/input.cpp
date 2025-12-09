@@ -6,9 +6,10 @@
 #include "game_save.h"
 #include <Preferences.h>
 
-static uint32_t s_lastInputMs = 0;
+static uint32_t s_lastInputUs = 0;
 uint32_t lastPadState = 0xFFFFFFFF;
-static const uint32_t INPUT_POLL_PERIOD_MS = 10;
+static const uint32_t INPUT_POLL_PERIOD_MS = 32;
+constexpr int64_t INPUT_POLL_PERIOD_US = 1000 * INPUT_POLL_PERIOD_MS;
 
 // I2C joypad (M5Stack JoyV2)
 static bool s_i2cPadPresent = false;
@@ -24,12 +25,12 @@ namespace share
 {
    bool shouldPollInput()
     {
-        uint32_t now = millis();
-        if (now - s_lastInputMs < INPUT_POLL_PERIOD_MS) {
+        uint32_t now = esp_timer_get_time();
+        if (now - s_lastInputUs < INPUT_POLL_PERIOD_US) {
             return false;
         }
 
-        s_lastInputMs = now;
+        s_lastInputUs = now;
         return true;
     }
 
