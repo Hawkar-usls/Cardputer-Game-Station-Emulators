@@ -201,7 +201,7 @@ unsigned char apuVoice(void)
   return ((VoiceOn && Sound[4]) ? IO[0x89] : 0x80);
 }
 
-unsigned char IRAM_ATTR ws_apuhVoice(int count, BYTE *hvoice)
+unsigned char ws_apuhVoice(int count, BYTE *hvoice)
 {
   static int index = 0;
 
@@ -266,7 +266,7 @@ void apuSweep(void)
   }
 }
 
-WORD IRAM_ATTR apuShiftReg(void)
+WORD apuShiftReg(void)
 {
   return 0;
 }
@@ -281,7 +281,7 @@ static inline int16_t clamp16(int32_t v)
   return (int16_t)v;
 }
 
-void IRAM_ATTR WsWaveSet(BYTE voice, BYTE hvoice)
+void WsWaveSet(BYTE voice, BYTE hvoice)
 {
   static int point[4]    = {0,0,0,0};
   static int preindex[4] = {0,0,0,0};
@@ -326,7 +326,7 @@ void IRAM_ATTR WsWaveSet(BYTE voice, BYTE hvoice)
   }
 }
 
-void IRAM_ATTR apuWaveSet(void)
+void apuWaveSet(void)
 {
   BYTE voice, hvoice;
   apuSweep();

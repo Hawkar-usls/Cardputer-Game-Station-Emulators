@@ -17,6 +17,7 @@ $Rev: 71 $
 
 extern void ws_graphics_paint(void); // SDL drawing of screen
 extern unsigned long SDL_UXTimerRead(void);
+extern void init_ModRM_tables(void);
 
 #define IPeriod 32          // HBlank/8 (256/8)
 #define MAX_SRAM_ALLOCATED 0x8000  // 32KB
@@ -1168,6 +1169,7 @@ void SetHVMode(int Mode)
 }
 
 void WsInit(void) {
+    init_ModRM_tables();
     WsAllocateBuffers();
 	apuInit();
 	WsLoadIEep();

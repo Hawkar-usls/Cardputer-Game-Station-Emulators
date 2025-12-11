@@ -208,7 +208,7 @@ extern "C" void ws_display_stop()
 }
 
 // Hook oswan
-extern "C" IRAM_ATTR void ws_graphics_paint(void)
+extern "C" void ws_graphics_paint(void)
 {
   if (!s_wsDispTask) return;
   xTaskNotifyGive(s_wsDispTask);   // non blocking

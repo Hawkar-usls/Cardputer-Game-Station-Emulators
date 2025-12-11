@@ -87,12 +87,17 @@ char seg_prefix;        /* prefix segment indicator */
 
 static int no_interrupt;
 
-static UINT8 parity_table[256];
+static UINT8 *parity_table;
 
 /***************************************************************************/
 
 void nec_reset (void *param)
 {
+    if (!parity_table)
+    {
+        parity_table = (UINT8 *)malloc(256);
+    }
+
     unsigned int i,j,c;
     BREGS reg_name[8]={ AL, CL, DL, BL, AH, CH, DH, BH };
 
