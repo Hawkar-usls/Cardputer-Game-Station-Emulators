@@ -84,7 +84,7 @@ void genesis_alloc_audio_buffers(void) {
 }
 
 /* Push mixed audio to cardputer speaker */
-IRAM_ATTR static void audio_task(void*){
+static void audio_task(void*){
   for(;;){
     taskYIELD();
     AudioMsg m;
@@ -118,7 +118,7 @@ void genesis_sound_init() {
 }
 
 /* Submit a frame of audio to the cardputer speaker */
-void IRAM_ATTR genesis_sound_submit_frame(void) {
+void genesis_sound_submit_frame(void) {
   // Snapshot des index 
   int ym_n, psg_n;
   taskENTER_CRITICAL(&g_ymMux);
@@ -180,7 +180,7 @@ extern "C" void genesis_sound_ym_init(void) {
 }
 
 /* Task for YM2612 audio processing */
-static void IRAM_ATTR ym_task(void*){
+static void ym_task(void*){
   for(;;){
     int target = s_ym_target_clock;      // snapshot
     ym2612_run(target);                  // avance core
@@ -210,11 +210,11 @@ extern "C" void genesis_sound_ym_stop(void) {
 }
 
 /* Set the target clock for YM2612 */
-extern "C" void IRAM_ATTR genesis_sound_ym_set_target_clock(int target) {
+extern "C" void genesis_sound_ym_set_target_clock(int target) {
   s_ym_target_clock = target;
 }
 
 /* Get the target clock for YM2612 */
-extern "C" int IRAM_ATTR genesis_sound_ym_get_target_clock(void) {
+extern "C" int  genesis_sound_ym_get_target_clock(void) {
   return s_ym_target_clock;
 }

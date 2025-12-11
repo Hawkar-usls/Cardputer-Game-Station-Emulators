@@ -62,7 +62,7 @@ static void genesis_alloc_core_buffers(void) {
 }
 
 /* RUN ONE FRAME with VDP, M68K, Z80, Sound, etc. */
-IRAM_ATTR static void run_one_frame() {
+static void run_one_frame() {
   const uint64_t t_start = micros();
   const bool drawFrame = (!s_skipZ80Next) && (s_draw_toggle = !s_draw_toggle); // frame skip logic
   const bool skipZ80 = s_skipZ80Next;   // snapshot
@@ -186,7 +186,7 @@ IRAM_ATTR static void run_one_frame() {
 }
 
 /* Run genesis emulation with XIP mapped rom */
-extern "C" void IRAM_ATTR run_genesis(const uint8_t* rom, size_t len) {
+extern "C" void run_genesis(const uint8_t* rom, size_t len) {
   M5Cardputer.Display.setSwapBytes(true);
 
   // Allocate buffers

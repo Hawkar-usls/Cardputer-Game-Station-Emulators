@@ -2017,7 +2017,7 @@ void YM2612ResetChip(void)
   }
 }
 
-static inline void IRAM_ATTR YM2612Update(int16_t *buffer, int length)
+static inline void YM2612Update(int16_t *buffer, int length)
 {
   #ifndef GENESIS_NO_SOUND
   int i;

@@ -59,7 +59,7 @@ void GWENESIS_PUSH_SCANLINE(int line, const uint16_t* src16, int w);
 void genesis_display_end_frame(void);
 
 // Display task
-void IRAM_ATTR display_task(void* arg);
+void display_task(void* arg);
 
 
 #ifdef __cplusplus

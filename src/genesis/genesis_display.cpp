@@ -123,7 +123,7 @@ extern "C" void genesis_display_init(void) {
 }
 
 /* Display task */
-void IRAM_ATTR display_task(void* arg) {
+void display_task(void* arg) {
   allocate_line_buffers();
   int prevDstY = 0;
   bool inFrame = false;
@@ -235,7 +235,7 @@ extern "C" void genesis_display_stop(void) {
 }
 
 /* Begin a new frame */
-extern "C" void IRAM_ATTR genesis_display_begin_frame(uint16_t srcH) {
+extern "C" void genesis_display_begin_frame(uint16_t srcH) {
   if (!g_scanQ) return;
   // Reset cached ROI 
   s_roiX0 = 0; s_roiY0 = 0; s_roiW = FB_W; s_roiH = srcH;

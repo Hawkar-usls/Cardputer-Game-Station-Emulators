@@ -604,7 +604,7 @@ unsigned int get_hscroll_vram(int line)
  *
  ******************************************************************************/
  //__attribute__((optimize("unroll-loops")))
-static inline __attribute__((always_inline))
+// static inline __attribute__((always_inline))
 void draw_line_b(int line)
 {
   uint8_t *scr  = &render_buffer[PIX_OVERFLOW];
