@@ -136,7 +136,7 @@ static inline void compute_common(bool fullscreenMode){
 void video_compute_scaler_full()   { compute_common(true);  }
 void video_compute_scaler_square() { compute_common(false); }
 
-IRAM_ATTR void sms_display_write_frame() {
+void sms_display_write_frame() {
   M5.Display.startWrite();
 
   M5.Display.setAddrWindow(offX, offY, dstW, dstH);
