@@ -141,7 +141,9 @@ void setup() {
 
   // Show keymapping
   display.topBar("- + SOUND [ ] BRIGHT", false, false);
-  display.showKeymapping(ext == ROM_TYPE_GENESIS); // three buttons for genesis
+  int numButtons = (ext == ROM_TYPE_GENESIS) ? 3 : 2;
+  numButtons = (ext == ROM_TYPE_SNES) ? 6 : numButtons;
+  display.showKeymapping(numButtons);
 
   // Wait for key press or show tips
   uint32_t lastUpdate = millis();
