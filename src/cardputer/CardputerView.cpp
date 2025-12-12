@@ -1,6 +1,6 @@
 #include "CardputerView.h"
 #include "Welcome.h"
-
+#include "CardputerInput.h"
 
 M5GFX* CardputerView::Display = nullptr;
 
@@ -31,19 +31,27 @@ void CardputerView::initialize() {
     Display->setFont(&fonts::Font0);
 }
 
-void CardputerView::showKeymapping(bool threeButtons) {
+void CardputerView::showKeymapping(uint8_t numButtons) {
+    // SNES = 6 boutons
+    if (numButtons == 6) {
+        showKeymapping6ButtonsSnes();
+        return;
+    }
+
+    // layout standard: 2 ou 3
+    showKeymappingStandard(numButtons);
+}
+
+void CardputerView::showKeymappingStandard(uint8_t numButtons) {
     clearMainView(5);
 
-    // Cadre
     Display->fillRoundRect(10, 35, Display->width() - 20, 90, DEFAULT_ROUND_RECT, TFT_BLACK);
     Display->drawRoundRect(10, 35, Display->width() - 20, 90, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
 
-    // Titre
     Display->setTextSize(TEXT_WIDE);
     Display->setTextColor(PRIMARY_COLOR);
     Display->drawCenterString("CONTROLS", Display->width() / 2, 45);
 
-    // dessiner une touche
     auto keyBox = [&](int x, int y, int w, int h, const char* key) {
         Display->fillRoundRect(x, y, w, h, DEFAULT_ROUND_RECT, RECT_COLOR_DARK);
         Display->drawRoundRect(x, y, w, h, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
@@ -53,40 +61,113 @@ void CardputerView::showKeymapping(bool threeButtons) {
         Display->drawCenterString(key, x + w/2, y + h/2 + textYOffset);
     };
 
-    // Croix
+    // D-PAD
     const int keyW = 22, keyH = 18, gap = 2;
     const int padX = 26, padY = 56;
-    keyBox(padX + keyW + gap,   padY,                 keyW, keyH, "E"); // Haut
-    keyBox(padX,                padY + keyH + gap,    keyW, keyH, "A"); // Gauche
-    keyBox(padX + keyW + gap,   padY + (keyH+gap)*2,  keyW, keyH, "S"); // Bas
-    keyBox(padX + (keyW+gap)*2, padY + keyH + gap,    keyW, keyH, "D"); // Droite
+    keyBox(padX + keyW + gap,   padY,                 keyW, keyH, "E");
+    keyBox(padX,                padY + keyH + gap,    keyW, keyH, "A");
+    keyBox(padX + keyW + gap,   padY + (keyH+gap)*2,  keyW, keyH, "S");
+    keyBox(padX + (keyW+gap)*2, padY + keyH + gap,    keyW, keyH, "D");
 
-    // Bloc boutons
+    // Boutons
     const int abY = 70;
     const int abGap = gap + 5;
 
-    if (threeButtons) {
-        // J, K, L 
+    if (numButtons == 3) {
         const int rightBlockW = keyW * 3 + abGap * 2;
         int abX = Display->width() - 20 - rightBlockW - 5;
 
-        keyBox(abX,                        abY, keyW, keyH, "J"); // J
-        keyBox(abX + keyW + abGap,         abY, keyW, keyH, "K"); // A
-        keyBox(abX + (keyW + abGap) * 2,   abY, keyW, keyH, "L"); // B
+        keyBox(abX,                      abY, keyW, keyH, "J");
+        keyBox(abX + keyW + abGap,       abY, keyW, keyH, "K");
+        keyBox(abX + (keyW + abGap) * 2, abY, keyW, keyH, "L");
     } else {
-        // K, L (2 boutons)
         const int rightBlockW = keyW * 2 + abGap;
         int abX = Display->width() - 20 - rightBlockW - 10 - 5;
 
-        keyBox(abX,               abY, keyW, keyH, "K");            // A
-        keyBox(abX + keyW + abGap,abY, keyW, keyH, "L");            // B
+        keyBox(abX,               abY, keyW, keyH, "K");
+        keyBox(abX + keyW + abGap,abY, keyW, keyH, "L");
     }
 
     // START / SELECT
     const int centerX = Display->width() / 2;
     const int ssY = 103, ssW = 26, ssH = 16, ssShiftRight = 10;
-    keyBox(centerX - ssW - 6 + ssShiftRight, ssY, ssW, ssH, "1"); // START
-    keyBox(centerX + 6 + ssShiftRight,       ssY, ssW, ssH, "2"); // SELECT
+    keyBox(centerX - ssW - 6 + ssShiftRight, ssY, ssW, ssH, "1");
+    keyBox(centerX + 6 + ssShiftRight,       ssY, ssW, ssH, "2");
+}
+
+void CardputerView::showKeymapping6ButtonsSnes() {
+    clearMainView(5);
+
+    // Frame
+    const int frameX = 10;
+    const int frameY = 35;
+    const int frameW = Display->width() - 20;
+    const int frameH = 90;
+
+    Display->fillRoundRect(frameX, frameY, frameW, frameH, DEFAULT_ROUND_RECT, TFT_BLACK);
+    Display->drawRoundRect(frameX, frameY, frameW, frameH, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
+
+    // Title
+    Display->setTextSize(TEXT_WIDE);
+    Display->setTextColor(PRIMARY_COLOR);
+    Display->drawCenterString("CONTROLS", Display->width() / 2, 45);
+
+    auto keyBox = [&](int x, int y, int w, int h, const char* key) {
+        Display->fillRoundRect(x, y, w, h, DEFAULT_ROUND_RECT, RECT_COLOR_DARK);
+        Display->drawRoundRect(x, y, w, h, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
+        const int textYOffset = -2;
+        Display->setTextColor(TEXT_COLOR);
+        Display->setTextSize(TEXT_MEDIUM);
+        Display->drawCenterString(key, x + w/2, y + h/2 + textYOffset);
+    };
+
+    // D-PAD proportions
+    const int keyW = 22, keyH = 18, gap = 2;
+
+    // D-PAD
+    const int padX = 26, padY = 56;
+    keyBox(padX + keyW + gap,   padY,                 keyW, keyH, "E");
+    keyBox(padX,                padY + keyH + gap,    keyW, keyH, "A");
+    keyBox(padX + keyW + gap,   padY + (keyH+gap)*2,  keyW, keyH, "S");
+    keyBox(padX + (keyW+gap)*2, padY + keyH + gap,    keyW, keyH, "D");
+
+    // Shoulder buttons
+    const int inset = 3;
+    const int lrY   = frameY + inset;
+    const int lrW   = 34;
+    const int lrH   = 16;
+
+    keyBox(frameX + inset,                 lrY, lrW, lrH, "I"); // L
+    keyBox(frameX + frameW - inset - lrW,  lrY, lrW, lrH, "J"); // R
+
+    // ABXY block 
+    const int btnGapX = gap + 5;
+    const int rowGapY = gap + 2;
+
+    const int topRowY    = 66;
+    const int bottomRowY = topRowY + keyH + rowGapY;
+
+    const int rowShiftPx = 10;
+    const int blockW     = keyW * 2 + btnGapX;
+
+    const int blockRight = frameX + frameW - inset - 15 - 5;
+    const int topRowX    = blockRight - blockW;
+    const int botRowX    = topRowX + rowShiftPx;
+
+    // Top row: Y / X
+    keyBox(topRowX,                  topRowY,    keyW, keyH, "O");
+    keyBox(topRowX + keyW + btnGapX, topRowY,    keyW, keyH, "P");
+
+    // Bottom row: B / A
+    keyBox(botRowX,                  bottomRowY, keyW, keyH, "L");
+    keyBox(botRowX + keyW + btnGapX, bottomRowY, keyW, keyH, "J");
+
+    // START / SELECT 
+    const int centerX = Display->width() / 2 - 5;
+    const int ssY = 103, ssW = 26, ssH = 16, ssShiftRight = 10;
+
+    keyBox(centerX - ssW - 6 + ssShiftRight, ssY, ssW, ssH, "1");
+    keyBox(centerX + 6 + ssShiftRight,       ssY, ssW, ssH, "2");
 }
 
 void CardputerView::welcome() {
