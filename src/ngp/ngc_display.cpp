@@ -16,7 +16,7 @@ bool s_lastScreenMode = ngpFullscreen;
 static bool s_lut_ready = false;
 
 // Entrelacement odd/even
-static bool s_interlace_parity = false;
+bool s_interlace_parity = false;
 
 static uint16_t* s_linebuf_panel = nullptr;
 static uint16_t* s_lut_x_full    = nullptr;
@@ -94,7 +94,8 @@ static void build_scale_luts()
   s_lut_ready = true;
 }
 
-static inline IRAM_ATTR void paint_fullscreen_stretch()
+//static inline IRAM_ATTR void paint_fullscreen_stretch()
+static inline void paint_fullscreen_stretch()
 {
   const int panelW = 240;
   const int panelH = 135;
@@ -183,6 +184,9 @@ extern "C" IRAM_ATTR void graphics_paint(unsigned char render)
     paint_fullheight_4x3();
   }
 
+  
+#ifndef NGP_HW_INTERLACED
   // alternate
-  s_interlace_parity = !s_interlace_parity;
+   s_interlace_parity = !s_interlace_parity; // parity is set by tlcs_execute() if using NGP_HW_INTERLACED
+#endif
 }
