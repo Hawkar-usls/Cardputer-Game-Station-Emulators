@@ -42,6 +42,7 @@ int finscan;
 int contador;
 extern int gfx_hacks;
 extern int fixsoundmahjong;
+extern bool s_interlace_parity;
 
 #define N_ALLREGS 256
 #define N_CREGS   8
@@ -96,14 +97,7 @@ unsigned char SZtable[256];            // zero and sign flags table for faster s
 extern unsigned char *ngpScY;
 int ngOverflow = 0;
 
-#ifdef FRAMESKIP
-#ifndef RENDER_NUM
-#define RENDER_NUM 1
-#endif
-#ifndef RENDER_DEN
-#define RENDER_DEN 5
-#endif
-
+#ifdef NGP_HW_INTERLACED
 // Etat frameskip
 static int s_framePatternIdx = 0;
 // Flag render
@@ -8322,6 +8316,7 @@ static int tlcs_step(void)
 }
 
 #ifdef FRAMESKIP
+static int s_framesToSkip = 0;  // refreshes every frame
 void tlcs_execute(int cycles, int skipframe )
 #else
 void tlcs_execute(int cycles)
@@ -8330,47 +8325,73 @@ void tlcs_execute(int cycles)
     int elapsed;
     int hCounter = ngOverflow;
 
-    while(cycles > 0)
-    {
-        for (elapsed = tlcs_step(); elapsed < (515 >> (tlcsClockMulti - 1)); elapsed += tlcs_step());
-        tlcsTimers(elapsed);
-        elapsed *= tlcsClockMulti;
-        soundStep(elapsed);
-
-        hCounter -= elapsed;
-
-        if (hCounter < 0)
+        while(cycles > 0)
         {
+            for (elapsed = tlcs_step(); elapsed < (515 >> (tlcsClockMulti - 1)); elapsed += tlcs_step());
+            tlcsTimers(elapsed);
+            elapsed *= tlcsClockMulti;
+            soundStep(elapsed);
+
+            hCounter -= elapsed;
+        
+         if (hCounter < 0)
+        {
+            bool renderThisLine = true;
+
 #ifdef FRAMESKIP
-            myGraphicsBlitLine(s_doRenderThisFrame);
-#else
-            myGraphicsBlitLine(true);
+            // If we are skipping frames, only render the last one
+            if (s_framesToSkip > 0)
+                renderThisLine = false;
+
+#ifdef NGP_HW_INTERLACED
+            else  // only applied if frame is being rendered
+                renderThisLine = s_doRenderThisFrame;
 #endif
+#else
+#ifdef NGP_HW_INTERLACED
+            renderThisLine = s_doRenderThisFrame;
+#endif
+#endif
+            myGraphicsBlitLine(renderThisLine);
             hCounter += 515;
 
-            // Début de ligne: HBlank ou VBlank
+            // HBlank
             if (*scanlineY < 151 || *scanlineY == finscan)
             {
-                // HBlank
                 if (tlcsMemReadB(0x8000) & 0x40)
                     tlcsTI0();
-
             }
-            else if (*scanlineY == 152)
+            else if (*scanlineY == 152) // VBlank = end of frame
             {
-                // VBlank (fin de frame logique)
                 if (tlcsMemReadB(0x8000) & 0x80)
                     tlcs_interrupt(2);
 
 #ifdef FRAMESKIP
-                // Avancer pattern pour prochaine frame
-                s_framePatternIdx = (s_framePatternIdx + 1) % RENDER_DEN;
-                s_doRenderThisFrame = (s_framePatternIdx < RENDER_NUM);
+                if (s_framesToSkip > 0)
+                {
+                    s_framesToSkip--;        // skipped frame — DO NOT advance parity
+                }
+                else
+                {
+#ifdef NGP_HW_INTERLACED
+                    s_framePatternIdx ^= 1;  // 0/1 alternating only on real frames
+                    s_doRenderThisFrame = (s_framePatternIdx == 0);
+                    s_interlace_parity = s_framePatternIdx; // <-- set parity for draw
+#endif
+                    s_framesToSkip = skipframe;  // set up next skip cycle
+                }
+#else
+#ifdef NGP_HW_INTERLACED   
+                s_framePatternIdx ^= 1;          // always alternate when no frameskip
+                s_doRenderThisFrame = (s_framePatternIdx == 0);
+                s_interlace_parity = s_framePatternIdx; // <-- set parity for draw
+#endif
 #endif
             }
         }
 
         cycles -= elapsed;
     }
+
     ngOverflow = hCounter + cycles;
 }
