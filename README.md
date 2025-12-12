@@ -6,7 +6,7 @@
 ![NGP emulator screen captures on the M5Stack Cardputer](ngp_emulator_s.jpg)
 ![Megadrive emulator screen captures on the M5Stack Cardputer](megadrive_emulator_s.jpg)
 
-Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), [Snes9x](https://github.com/snes9xgit/snes9x), [Smsplus](https://github.com/ducalex/retro-go/tree/master/retro-core/components/smsplus), [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan), [GnuBoy](github.com/rofl0r/gnuboy), [Handy](https://github.com/libretro/libretro-handy) and [PCE-GO](https://github.com/ducalex/retro-go/tree/master/retro-core/components/pce-go). All cores were modified to run using **less than 256 KB of RAM**.
+Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), [Snes9x](https://github.com/snes9xgit/snes9x), [Smsplus](https://github.com/ducalex/retro-go/tree/master/retro-core/components/smsplus), [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan), [GnuBoy](https://github.com/rofl0r/gnuboy), [Handy](https://github.com/libretro/libretro-handy) and [PCE-GO](https://github.com/ducalex/retro-go/tree/master/retro-core/components/pce-go). All cores were modified to run using **less than 256 KB of RAM**.
 
  Console           | Sound | Video | Save | Speed | All Games  | Notes |
 |-------------------|--------|--------|---------------|-------------|-------------------|--------|
