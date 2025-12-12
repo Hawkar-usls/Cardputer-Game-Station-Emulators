@@ -18,6 +18,7 @@
 #include "lynx/run_lynx.h"
 #include "genesis/run_genesis.h"
 #include "gbc/run_gbc.h"
+#include "snes/run_snes.h"
 #include "last_game.h"
 #define RETRO_COMPAT_IMPLEMENTATION
 #include "ngp/race/retro_compat.h"
@@ -214,6 +215,12 @@ void setup() {
   else if (ext == ROM_TYPE_LYNX) {
       // --- Lynx ---
       run_lynx(get_rom_ptr(), get_rom_size(), romName.c_str());
+  }
+  else if (ext == ROM_TYPE_SNES) {
+      // --- SNES / Super Famicom ---
+      display.displaySnesInfo();
+      input.waitPress();
+      run_snes(get_rom_ptr(), get_rom_size());
   }
   else {
       display.topBar("ERROR", false, false);
