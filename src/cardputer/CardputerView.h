@@ -26,12 +26,14 @@
 #define PCE_COLOR      0xE81A
 #define LYNX_COLOR     0xD588  
 #define GAMEBOY_COLOR  0xFCD3
+#define SNES_COLOR     0xD024  // redish
 #define FOLDER_COLOR   0xFEC0  // Jaune pâle (≈ #F6EB61)
 
 // TEXT SIZE
 #define TEXT_BIG 2
 #define TEXT_LARGE 1.9
 #define TEXT_WIDE 1.4
+#define TEXT_MEDIUM_WIDE 1.3
 #define TEXT_MEDIUM_LARGE 1.2
 #define TEXT_MEDIUM 1.1
 #define TEXT_SMALL 1.0
@@ -69,6 +71,7 @@ public:
     void drawSelectedRowMarquee(const std::string& text, uint16_t rowInPage, size_t visibleRows);
     void showValidExt(const std::vector<std::string>& exts);
     static void copyProgress(size_t total, size_t current, void* userCtx = nullptr);
+    void displaySnesInfo();
 private:
     static M5GFX* Display; 
     void drawRect(bool selected, uint8_t margin, uint16_t startY, uint16_t sizeX, uint16_t sizeY, uint16_t stepY);

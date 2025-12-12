@@ -870,6 +870,7 @@ uint16_t CardputerView::colorForExt(const std::string& extRaw) const {
     if (ext == ".pce") return PCE_COLOR;
     if (ext == ".gb" || ext == ".gbc") return GAMEBOY_COLOR;
     if (ext == ".lnx") return LYNX_COLOR;
+    if (ext == ".sfc") return SNES_COLOR;
 
     return TEXT_COLOR;
 }
@@ -1070,3 +1071,58 @@ void CardputerView::copyProgress(size_t total, size_t current, void* userCtx) {
         lastFilledW = filledW;
     }
 }
+
+void CardputerView::displaySnesInfo() {
+    Display->fillScreen(BACKGROUND_COLOR);
+
+    // Box frame
+    Display->drawRect(1, 1, Display->width() - 1, Display->height() - 1, PRIMARY_COLOR);
+
+    // Main title
+    Display->setTextSize(TEXT_BIG);
+    Display->setTextColor(PRIMARY_COLOR);
+
+    {
+        std::string title = "SNES EMULATOR";
+        auto x = getCenterOffset(title, Display->width());
+        Display->setCursor(x, 22);
+        Display->printf("%s", title.c_str());
+    }
+
+    // Sub title (line 1)
+    Display->setTextSize(TEXT_MEDIUM_WIDE);
+    Display->setTextColor(TEXT_COLOR);
+    {
+        std::string l1 = "SNES emulation is experimental";
+        auto x = getCenterOffset(l1, Display->width());
+        Display->setCursor(x, 46);
+        Display->printf("%s", l1.c_str());
+    }
+
+    // Text line 2
+    {
+        std::string l2 = "and often cannot run properly";
+        auto x = getCenterOffset(l2, Display->width());
+        Display->setCursor(x, 65);
+        Display->printf("%s", l2.c_str());
+    }
+
+    // Highlight line (line 3)
+    Display->setTextColor(PRIMARY_COLOR);
+    Display->setTextSize(TEXT_MEDIUM_LARGE);
+    {
+        std::string warn = "Hardware limits on Cardputer";
+        auto x = getCenterOffset(warn, Display->width());
+        Display->setCursor(x, 88);
+        Display->printf("%s", warn.c_str());
+    }
+
+    // Button OK
+    Display->fillRoundRect(70, 105, 100, 20, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
+    Display->setTextColor(TEXT_COLOR);
+    Display->setTextSize(TEXT_MEDIUM_WIDE);
+    Display->setCursor(82, 115);
+    Display->printf("OK to start");
+}
+
+
