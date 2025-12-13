@@ -92,8 +92,8 @@ extern bool s_interlace_parity;
 //
 //
 
-unsigned char Ztable[256];            // zero and sign flags table for faster setting
-unsigned char SZtable[256];            // zero and sign flags table for faster setting
+unsigned char*Ztable;            // zero and sign flags table for faster setting
+unsigned char *SZtable;            // zero and sign flags table for faster setting
 extern unsigned char *ngpScY;
 int ngOverflow = 0;
 
@@ -7568,6 +7568,9 @@ int tlcs_alloc_tables(void)
     cregsB   = calloc(N_CREGS,   sizeof(unsigned char  *));
     cregsW   = calloc(N_CREGS,   sizeof(unsigned short *));
     cregsL   = calloc(N_CREGS,   sizeof(unsigned int   *));
+
+    Ztable = calloc(256, sizeof(unsigned char));
+    SZtable = calloc(256, sizeof(unsigned char));
     
     if (!allregsB || !allregsW || !allregsL ||
         !cregsB   || !cregsW   || !cregsL) {

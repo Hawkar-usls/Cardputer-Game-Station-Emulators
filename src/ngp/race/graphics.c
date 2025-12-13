@@ -198,7 +198,7 @@ typedef struct {
     unsigned short *palette;
 } TILECACHE;
 
-uint16_t palettes[16*4+16*4+16*4];
+uint16_t *palettes;
 static TILECACHE  tCBack, tCFront;
 
 static INLINE void lineClear(TILECACHE *tC, unsigned short col)
@@ -695,6 +695,10 @@ BOOL graphics_init(void)
 
     if (!myPalettes) {
         myPalettes = calloc(192, sizeof(uint16_t));
+    }
+
+    if (palettes == NULL) {
+        palettes = calloc(192, sizeof(uint16_t));
     }
 
     if (!mySprites) {
