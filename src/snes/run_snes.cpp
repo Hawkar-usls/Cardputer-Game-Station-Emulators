@@ -226,7 +226,7 @@ void run_snes(const uint8_t* rom, size_t romSize)
             // Auto interlace toggle
             if (!interlace_enabled && fps < 48.0f)
                 interlace_enabled = true;
-            else if (interlace_enabled && fps > 52.0f)
+            else if (interlace_enabled && fps > 60.0f)
                 interlace_enabled = false;
 
             printf("[SNES] FPS: %.2f | HEAP: %u | INTERLACE: %s\n",
