@@ -211,6 +211,7 @@ bool gb_hw_init(void)
 	hw.rambanks = calloc(8, 4096);
 	hw.vbanks = calloc(2, 8192);
 	hw.ioregs = calloc(256, 1);
+	hw.video.palette = malloc(64 * sizeof(uint16_t));
 
 	hw.snd = gb_sound_init();
 	hw.cpu = gb_cpu_init();

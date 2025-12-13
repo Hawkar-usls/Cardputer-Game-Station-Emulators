@@ -241,7 +241,7 @@ typedef struct
 			uint8_t *buffer8;
 			void *buffer;
 		};
-		uint16_t palette[64];
+		uint16_t *palette;
 	} video;
 
 	struct {
