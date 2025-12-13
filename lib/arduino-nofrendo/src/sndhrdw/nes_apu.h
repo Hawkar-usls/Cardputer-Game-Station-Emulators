@@ -196,7 +196,7 @@ typedef struct apuext_s
 
 typedef struct apu_s
 {
-   rectangle_t rectangle[2];
+   rectangle_t *rectangle;
    triangle_t triangle;
    noise_t noise;
    dmc_t dmc;

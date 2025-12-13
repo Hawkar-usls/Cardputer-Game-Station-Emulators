@@ -53,7 +53,7 @@ enum
 
 /* TODO: bleh */
 #include "bitmap.h"
-extern rgb_t gui_pal[GUI_TOTALCOLORS];
+extern const rgb_t gui_pal[GUI_TOTALCOLORS];
 
 #define MAX_MSG_LENGTH 256
 

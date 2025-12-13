@@ -35,6 +35,7 @@ static FILE *errorlog = NULL;
 #endif /* NOFRENDO_LOG_TO_FILE */
 
 static int (*log_func)(const char *string) = NULL;
+static char *buffer;
 
 /* first up: debug versions of calls */
 #ifdef NOFRENDO_DEBUG
@@ -78,8 +79,9 @@ int nofrendo_log_print(const char *string)
 
 int nofrendo_log_printf(const char *format, ...)
 {
-   /* don't allocate on stack every call */
-   static char buffer[1024 + 1];
+   if (buffer == NULL)
+      buffer = malloc(1024 + 1); 
+
    va_list arg;
 
    va_start(arg, format);

@@ -43,7 +43,7 @@
 
 /* TODO: oh god */
 /* 8-bit GUI color table */
-rgb_t gui_pal[GUI_TOTALCOLORS] =
+const rgb_t gui_pal[GUI_TOTALCOLORS] =
     {
         {0x00, 0x00, 0x00}, /* black      */
         {0x3F, 0x3F, 0x3F}, /* dark gray  */

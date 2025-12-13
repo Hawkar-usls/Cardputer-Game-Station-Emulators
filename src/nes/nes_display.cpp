@@ -8,7 +8,7 @@ int16_t frame_scaling;
 static uint16_t* s_nesLineBuf = nullptr;
 static int       s_nesLineBufLen = 0;  // en pixels
 static int16_t frame_x, frame_y, frame_x_offset, frame_y_offset, frame_width, frame_height, frame_line_pixels;
-extern uint16_t myPalette[];
+extern uint16_t *myPalette;
 extern bool fullscreenMode;
 extern int nesZoomPercent;
 

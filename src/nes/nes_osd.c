@@ -84,9 +84,17 @@ static void shutdown(void)               {}
 static int  set_mode(int width, int height) { (void)width; (void)height; return 0; }
 
 /* palette */
-uint16 myPalette[256];
+uint16 *myPalette;
 static void set_palette(rgb_t *pal)
 {
+    if (!myPalette) {
+        myPalette = (uint16 *)malloc(256 * sizeof(uint16));
+        if (!myPalette) {
+            nofrendo_log_printf("OSD: set_palette malloc FAILED\n");
+            return;
+        }
+    }
+
     int i;
     for (i = 0; i < 256; i++) {
         uint16 c = (pal[i].b >> 3) + ((pal[i].g >> 2) << 5) + ((pal[i].r >> 3) << 11);

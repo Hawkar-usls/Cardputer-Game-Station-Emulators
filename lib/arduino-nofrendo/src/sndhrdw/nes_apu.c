@@ -45,9 +45,9 @@
 static apu_t apu;
 
 /* look up table madness */
-static int32 decay_lut[16];
-static int vbl_lut[32];
-static int trilength_lut[128];
+static int32 *decay_lut;
+static int *vbl_lut;
+static int *trilength_lut;
 
 /* noise lookups for both modes */
 #ifndef REALTIME_NOISE
@@ -984,6 +984,16 @@ void apu_setparams(double base_freq, int sample_rate, int refresh_rate, int samp
 /* Initializes emulated sound hardware, creates waveforms/voices */
 apu_t *apu_create(double base_freq, int sample_rate, int refresh_rate, int sample_bits)
 {
+   if (decay_lut == NULL)
+   {
+      decay_lut = NOFRENDO_MALLOC(sizeof(int32) * 16);
+      vbl_lut = NOFRENDO_MALLOC(sizeof(int32) * 32);
+      trilength_lut = NOFRENDO_MALLOC(sizeof(int32) * 128);
+      memset(decay_lut, 0, sizeof(int32) * 16);
+      memset(vbl_lut, 0, sizeof(int32) * 32);
+      memset(trilength_lut, 0, sizeof(int32) * 128);
+   }
+
    apu_t *temp_apu;
    int channel;
 
@@ -992,6 +1002,9 @@ apu_t *apu_create(double base_freq, int sample_rate, int refresh_rate, int sampl
       return NULL;
 
    memset(temp_apu, 0, sizeof(apu_t));
+
+   temp_apu->rectangle = NOFRENDO_MALLOC(sizeof(rectangle_t) * 2);
+   memset(temp_apu->rectangle, 0, sizeof(rectangle_t) * 2);
 
    /* set the update routine */
    temp_apu->process = apu_process;

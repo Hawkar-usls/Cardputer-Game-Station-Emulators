@@ -56,8 +56,8 @@ typedef struct nes_s
 {
    /* hardware things */
    nes6502_context *cpu;
-   nes6502_memread readhandler[MAX_MEM_HANDLERS];
-   nes6502_memwrite writehandler[MAX_MEM_HANDLERS];
+   nes6502_memread *readhandler;
+   nes6502_memwrite *writehandler;
 
    ppu_t *ppu;
    apu_t *apu;

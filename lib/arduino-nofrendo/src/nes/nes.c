@@ -519,6 +519,7 @@ nes_t *nes_create(void)
    sndinfo_t osd_sound;
    int i;
 
+
    machine = NOFRENDO_MALLOC(sizeof(nes_t));
    if (NULL == machine)
       return NULL;
@@ -541,6 +542,12 @@ nes_t *nes_create(void)
       goto _fail;
 
    memset(machine->cpu, 0, sizeof(nes6502_context));
+
+   machine->writehandler = NOFRENDO_MALLOC(sizeof(nes6502_memwrite) * MAX_MEM_HANDLERS);
+   machine->readhandler = NOFRENDO_MALLOC(sizeof(nes6502_memread) * MAX_MEM_HANDLERS);
+
+   if (NULL == machine->writehandler || NULL == machine->readhandler)
+      goto _fail;
 
    /* allocate 2kB RAM */
    machine->cpu->mem_page[0] = NOFRENDO_MALLOC(NES_RAMSIZE);
