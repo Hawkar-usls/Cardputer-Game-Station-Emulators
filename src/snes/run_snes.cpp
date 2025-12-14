@@ -45,11 +45,11 @@ bool S9xInitDisplay(void)
     GFX.PPL        = SNES_WIDTH;
     GFX.PPLx2      = SNES_WIDTH * 2;
 
+    // we use line rendering/instant push to the screen, no framebuffer needed
     GFX.Screen     = NULL;
     GFX.SubScreen  = NULL;
     GFX.ZBuffer    = NULL;
     GFX.SubZBuffer = NULL;
-
     GFX.LineRenderMode = true;
     GFX.LinePPL        = SNES_WIDTH;
     GFX.LinePitch      = SNES_WIDTH * sizeof(uint16_t);
@@ -107,8 +107,6 @@ void run_snes(const uint8_t* rom, size_t romSize)
 {
     printf("[SNES] ROM: %p (size %zu bytes)\n", rom, romSize);
 
-    memset(&Settings, 0, sizeof(Settings));
-
     // Rom (mapped in flash)
     Memory.ROM           = (uint8_t*)rom;
     Memory.ROM_Offset    = 0;
@@ -127,10 +125,8 @@ void run_snes(const uint8_t* rom, size_t romSize)
     Settings.SoundBufferSize   = 0;
     Settings.ThreadSound       = false;
     Settings.Mute              = true;
-    Settings.SoundSync         = false;
     Settings.APUEnabled        = false;
-    Settings.DisableSoundEcho  = true;
-    Settings.InterpolatedSound = false;
+    Settings.DisableSoundEcho = false;
 
     if (!snes_init()) {
         printf("[SNES] snes_init failed, aborting\n");
