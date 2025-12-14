@@ -174,13 +174,21 @@ psg_update_chan(sample_t *buf, int ch, size_t dwSize)
 int
 psg_init(int _samplerate, bool _stereo)
 {
-	PCE.PSG.chan[4].noise_rand = 0x51F63101;
-	PCE.PSG.chan[5].noise_rand = 0x1F631042;
+    if (PCE.PSG.chan == NULL) {
+        PCE.PSG.chan = (psg_chan_t*)malloc(PSG_CHANNELS * sizeof(psg_chan_t));
+        if (!PCE.PSG.chan) {
+            return -1;
+        }
+        memset(PCE.PSG.chan, 0, PSG_CHANNELS * sizeof(psg_chan_t));
+    }
 
-	samplerate = _samplerate;
-	stereo = _stereo;
+    PCE.PSG.chan[4].noise_rand = 0x51F63101;
+    PCE.PSG.chan[5].noise_rand = 0x1F631042;
 
-	return 0;
+    samplerate = _samplerate;
+    stereo = _stereo;
+
+    return 0;
 }
 
 

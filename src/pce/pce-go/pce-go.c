@@ -56,9 +56,10 @@ static save_var_t SaveStateVars[] =
 	// PSG
 	SVAR_1("PSG.ch", PCE.PSG.ch),               SVAR_1("PSG.vol", PCE.PSG.volume),
 	SVAR_1("PSG.lfo_f", PCE.PSG.lfo_freq),      SVAR_1("PSG.lfo_c", PCE.PSG.lfo_ctrl),
-	SVAR_N("PSG.ch0", PCE.PSG.chan[0], 40),     SVAR_N("PSG.ch1", PCE.PSG.chan[1], 40),
-	SVAR_N("PSG.ch2", PCE.PSG.chan[2], 40),     SVAR_N("PSG.ch3", PCE.PSG.chan[3], 40),
-	SVAR_N("PSG.ch4", PCE.PSG.chan[4], 40),     SVAR_N("PSG.ch5", PCE.PSG.chan[5], 40),
+	// TODO: adapt this, PCE.PSG.chan changed from array to pointer
+	// SVAR_N("PSG.ch0", PCE.PSG.chan[0], 40),     SVAR_N("PSG.ch1", PCE.PSG.chan[1], 40),
+	// SVAR_N("PSG.ch2", PCE.PSG.chan[2], 40),     SVAR_N("PSG.ch3", PCE.PSG.chan[3], 40),
+	// SVAR_N("PSG.ch4", PCE.PSG.chan[4], 40),     SVAR_N("PSG.ch5", PCE.PSG.chan[5], 40),
 
 	// VCE
 	SVAR_A("VCE.regs", PCE.VCE.regs),           SVAR_2("VCE.reg", PCE.VCE.reg),
