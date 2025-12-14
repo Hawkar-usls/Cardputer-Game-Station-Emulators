@@ -100,8 +100,9 @@ int ngOverflow = 0;
 #ifdef NGP_HW_INTERLACED
 // Etat frameskip
 static int s_framePatternIdx = 0;
-// Flag render
-static bool s_doRenderThisFrame = true;
+#endif
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+extern uint8_t* s_lut_y_render;
 #endif
 
 //#define USE_PARITY_TABLE  //this is currently broken!
@@ -8345,18 +8346,56 @@ void tlcs_execute(int cycles)
             // If we are skipping frames, only render the last one
             if (s_framesToSkip > 0)
                 renderThisLine = false;
-
+#ifdef NGP_HW_INTERLACED
+            else if (*scanlineY < 152)
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                if (s_lut_y_render[*scanlineY])
+#endif
+                    s_framePatternIdx ^= 1;          // always alternate when no frameskip
+#endif
 #ifdef NGP_HW_INTERLACED
             else  // only applied if frame is being rendered
-                renderThisLine = s_doRenderThisFrame;
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                if (s_lut_y_render[*scanlineY])
+#endif
+                renderThisLine = s_framePatternIdx;
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                else
+                    renderThisLine=false;
+#endif 
 #endif
 #else
 #ifdef NGP_HW_INTERLACED
-            renderThisLine = s_doRenderThisFrame;
+            if (*scanlineY < 152)
+            {
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                if (s_lut_y_render[*scanlineY])
+#endif
+                    s_framePatternIdx ^= 1;          // always alternate when no frameskip
+
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                if (s_lut_y_render[*scanlineY]) // only use pattern if this is a visible line
+#endif
+                    renderThisLine = s_framePatternIdx;
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                else
+                    renderThisLine = false;
+#endif
+            }
+#else
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+            if (*scanlineY < 152)
+                if (!s_lut_y_render[*scanlineY])
+                    renderThisLine = false; // do not render lines that arent visible due to scaling
 #endif
 #endif
+#endif
+            // per-line rendering debug. actual scanlineY values will go up to ~198
+            // if (*scanlineY < 152)
+            //     printf("[NGP_LINE] scanelineY %d | renderThisLine %d | s_framePatternIdx %d | s_lut_y_render[%d]=%d\n",(int)*scanlineY,(int)renderThisLine,s_framePatternIdx,(int)*scanlineY,(int)s_lut_y_render[*scanlineY]);
             myGraphicsBlitLine(renderThisLine);
             hCounter += 515;
+
 
             // HBlank
             if (*scanlineY < 151 || *scanlineY == finscan)
@@ -8377,17 +8416,17 @@ void tlcs_execute(int cycles)
                 else
                 {
 #ifdef NGP_HW_INTERLACED
-                    s_framePatternIdx ^= 1;  // 0/1 alternating only on real frames
-                    s_doRenderThisFrame = (s_framePatternIdx == 0);
-                    s_interlace_parity = s_framePatternIdx; // <-- set parity for draw
+                    s_interlace_parity = s_framePatternIdx; // <-- set parity for draw, if 152 lines than the parity the same as the last line
 #endif
                     s_framesToSkip = skipframe;  // set up next skip cycle
                 }
 #else
-#ifdef NGP_HW_INTERLACED   
-                s_framePatternIdx ^= 1;          // always alternate when no frameskip
-                s_doRenderThisFrame = (s_framePatternIdx == 0);
-                s_interlace_parity = s_framePatternIdx; // <-- set parity for draw
+#ifdef NGP_HW_INTERLACED
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+                s_interlace_parity = s_framePatternIdx^1; // the opposite parity of the current value for odd number of line(135)
+#else
+                s_interlace_parity = s_framePatternIdx; // the current pairty for the draw parity for even number of lines(152)
+#endif
 #endif
 #endif
             }
