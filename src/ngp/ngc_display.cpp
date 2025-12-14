@@ -23,6 +23,9 @@ static uint16_t* s_lut_x_full    = nullptr;
 static uint16_t* s_lut_y_full    = nullptr;
 static uint16_t* s_lut_x_4x3     = nullptr;
 static uint16_t* s_fb            = nullptr;
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+uint8_t* s_lut_y_render    = nullptr; // 152 element array of boolean render status for each line
+#endif
 unsigned short *drawBuffer = s_fb; 
 
 extern "C" void ngc_display_init(void)
@@ -53,6 +56,12 @@ extern "C" void ngc_display_init(void)
   if (!s_lut_x_4x3)
     s_lut_x_4x3 = (uint16_t*)heap_caps_malloc(180 * sizeof(uint16_t),
                                               MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+  if (!s_lut_y_render)
+    s_lut_y_render = (uint8_t*)heap_caps_malloc(152 * sizeof(uint8_t),
+                                              MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+#endif
 
   M5.Display.setSwapBytes(true);
   M5.Display.fillScreen(TFT_BLACK);
@@ -90,6 +99,16 @@ static void build_scale_luts()
     int srcX  = virtX - virtOff;
     s_lut_x_4x3[x] = (unsigned)srcX < (unsigned)srcW ? (uint16_t)srcX : 0;
   }
+
+#ifdef NGP_ONLY_RENDER_VISIBLE_LINES
+  // reset all lines to 0
+  for (int y = 0; y < srcH; y++)
+    s_lut_y_render[y]=0;
+
+  // toggle only visible lines
+  for (int y = 0; y < outH; y++)
+    s_lut_y_render[s_lut_y_full[y]]=1;
+#endif
 
   s_lut_ready = true;
 }
