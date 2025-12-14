@@ -42,7 +42,7 @@ static inline bool hasRomExt(const std::string& path) {
     for (auto &ch : ext)
         ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
 
-    return (ext == "nes" || ext == "gg" || ext == "sms" || ext == "ngc" || ext == "ngp" || ext == "md" || ext == "ws" || ext == "wsc" || ext == "pce" || ext == "gb" || ext == "gbc" || ext == "gb" || ext == "gbc" || ext == "lnx" || ext == "sfc");
+    return (ext == "nes" || ext == "gg" || ext == "sms" || ext == "ngc" || ext == "ngp" || ext == "md" || ext == "ws" || ext == "wsc" || ext == "pce" || ext == "gb" || ext == "gbc" || ext == "gb" || ext == "gbc" || ext == "lnx" || ext == "sfc" || ext == "smc");
 }
 
 static inline int detectNeoGeoPocketFromRom(const uint8_t* rom, size_t size, const std::string& filepath)
@@ -101,6 +101,7 @@ RomType getRomType(const std::string& path) {
     if (ext == "gb" || ext == "gbc") return ROM_TYPE_GB;
     if (ext == "lnx") return ROM_TYPE_LYNX;
     if (ext == "sfc") return ROM_TYPE_SNES;
+    if (ext == "smc") return ROM_TYPE_SNES;
 
     return ROM_TYPE_UNKNOWN;
 }

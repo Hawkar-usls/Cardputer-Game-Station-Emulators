@@ -23,7 +23,9 @@ pce_reset(bool hard)
 {
 	memset(&PCE.VCE, 0, sizeof(PCE.VCE));
 	memset(&PCE.VDC, 0, sizeof(PCE.VDC));
+	psg_chan_t *saved_chan = PCE.PSG.chan;
 	memset(&PCE.PSG, 0, sizeof(PCE.PSG));
+	PCE.PSG.chan = saved_chan;
 	memset(&PCE.Timer, 0, sizeof(PCE.Timer));
 
 	if (PCE.VDC.regs == NULL)
@@ -52,8 +54,11 @@ pce_reset(bool hard)
 	PCE.Cycles = 0;
 
 	// Reset sound generator values
-	for (int i = 0; i < PSG_CHANNELS; i++) {
-		PCE.PSG.chan[i].control = 0x80;
+	if (PCE.PSG.chan) {
+		memset(PCE.PSG.chan, 0, PSG_CHANNELS * sizeof(psg_chan_t));
+		for (int i = 0; i < PSG_CHANNELS; i++) {
+			PCE.PSG.chan[i].control = 0x80;
+		}
 	}
 
 	// Reset memory banking

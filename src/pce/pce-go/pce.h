@@ -217,7 +217,7 @@ typedef struct {
 		uint8_t volume;         // reg 1
 		uint8_t lfo_freq;       // reg 8
 		uint8_t lfo_ctrl;       // reg 9
-		psg_chan_t chan[PSG_CHANNELS]; // regs 2-7
+		psg_chan_t *chan; // regs 2-7
 		uint8_t padding[16];
 	} PSG;
 

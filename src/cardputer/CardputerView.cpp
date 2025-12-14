@@ -175,7 +175,7 @@ void CardputerView::welcome() {
     Display->pushImage(0, 0, BGGAMESTATION_S_WIDTH, BGGAMESTATION_S_HEIGHT, bggamestation_s);
    
     // Title
-    std::string title = "Game Station 0.8";
+    std::string title = "Game Station 0.9";
     Display->setTextColor(TEXT_COLOR);
     Display->setTextSize(TEXT_BIG);
     Display->setCursor(getCenterOffset(title), 65);
@@ -951,7 +951,7 @@ uint16_t CardputerView::colorForExt(const std::string& extRaw) const {
     if (ext == ".pce") return PCE_COLOR;
     if (ext == ".gb" || ext == ".gbc") return GAMEBOY_COLOR;
     if (ext == ".lnx") return LYNX_COLOR;
-    if (ext == ".sfc") return SNES_COLOR;
+    if (ext == ".sfc" || ext == ".smc") return SNES_COLOR;
 
     return TEXT_COLOR;
 }
@@ -966,10 +966,8 @@ void CardputerView::showValidExt(const std::vector<std::string>& exts) {
 
     Display->fillRoundRect(boxX, boxY, boxW, boxH, DEFAULT_ROUND_RECT, RECT_COLOR_DARK);
     Display->drawRoundRect(boxX, boxY, boxW, boxH, DEFAULT_ROUND_RECT, PRIMARY_COLOR);
-
-    // --- PLUS DE TITRE ---  
-    // On commence directement les badges en haut du cadre.
-    int cursorY = boxY + 12;   // AVANT 30 → maintenant beaucoup plus haut
+ 
+    int cursorY = boxY + 12; 
 
     // Badges layout
     const int innerPad = 10;
@@ -992,7 +990,7 @@ void CardputerView::showValidExt(const std::vector<std::string>& exts) {
     int currentRowWidth  = 0;
     int currentRowHeight = 0;
 
-    // Construction des lignes (wrap)
+    // Construction des lignes
     for (const auto& raw : exts) {
         std::string txt = raw;
         for (auto& c : txt) c = (char)std::toupper((unsigned char)c);
