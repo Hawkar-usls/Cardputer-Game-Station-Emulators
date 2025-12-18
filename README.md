@@ -1,10 +1,10 @@
 # Cardputer Game Station
 
-![NES emulator screen captures on the M5Stack Cardputer](nes_emulator_s.jpg)
-![GBC emulator screen captures on the M5Stack Cardputer](gbc_emulator_s.jpg)
-![SMS emulator screen captures on the M5Stack Cardputer](sms_emulator_s.jpg)
-![NGP emulator screen captures on the M5Stack Cardputer](ngp_emulator_s.jpg)
-![Megadrive emulator screen captures on the M5Stack Cardputer](megadrive_emulator_s.jpg)
+![NES emulator screen captures on the M5Stack Cardputer](images/nes_emulator_s.jpg)
+![GBC emulator screen captures on the M5Stack Cardputer](images/gbc_emulator_s.jpg)
+![SMS emulator screen captures on the M5Stack Cardputer](images/sms_emulator_s.jpg)
+![NGP emulator screen captures on the M5Stack Cardputer](images/ngp_emulator_s.jpg)
+![Megadrive emulator screen captures on the M5Stack Cardputer](images/megadrive_emulator_s.jpg)
 
 Powered by [Nofrendo](https://github.com/moononournation/arduino-nofrendo), [Snes9x](https://github.com/snes9xgit/snes9x), [Smsplus](https://github.com/ducalex/retro-go/tree/master/retro-core/components/smsplus), [Race](https://github.com/libretro/RACE), [Gwenesis](https://github.com/bzhxx/gwenesis), [Oswan](https://github.com/alekmaul/oswan), [GnuBoy](https://github.com/rofl0r/gnuboy), [Handy](https://github.com/libretro/libretro-handy) and [PCE-GO](https://github.com/ducalex/retro-go/tree/master/retro-core/components/pce-go). All cores were modified to run using **less than 256 KB of RAM**.
 
@@ -52,10 +52,17 @@ The built-in **Cardputer keyboard** is used for all controls:
 
 The `j` key is also bound as Button A to allow an alternative layout for player preference.
 
+## M5Stack Joy V2
+
 You can alternatively use the M5Stack JoyV2, **just plug it in before launching a game** and it will work automatically.
 
-![A photo of the M5Stack Joystick Version 2](m5stack_joyv2.jpg)
+![A photo of the M5Stack Joystick Version 2](images/m5stack_joyv2.jpg)
 
+## D-Pad 3D Model
+
+[Cardputer-Accessories repo](https://github.com/AndreiVladescu/Cardputer-Accessories) to get the 3D model for D-Pad that you can put on the Cardputer's keys.
+
+[![A render of the 3D DPAD model](images/cardputer_gamepad_render.jpg)](https://github.com/AndreiVladescu/Cardputer-Accessories)
 
 ## Zoom Mode
 
