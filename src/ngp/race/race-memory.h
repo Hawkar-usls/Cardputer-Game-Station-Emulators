@@ -238,12 +238,16 @@ static INLINE unsigned int tlcsMemReadL(unsigned int addr)
    if(gA == 0)
       return 0;
 
-   i = *(gA++);
-   i |= (*(gA++)) << 8;
-   i |= (*(gA++)) << 16;
-   i |= (unsigned int)(*gA) << 24;
+      /* unaligned path */
+   if (((uintptr_t)gA) & 3) {
+      return  (unsigned int)gA[0]
+            | ((unsigned int)gA[1] << 8)
+            | ((unsigned int)gA[2] << 16)
+            | ((unsigned int)gA[3] << 24);
+   }
 
-   return i;
+   /* aligned fast path */
+   return *(const unsigned int *)gA;   
 #endif
 }
 
