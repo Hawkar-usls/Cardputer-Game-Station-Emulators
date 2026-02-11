@@ -187,7 +187,7 @@ namespace share
             joystick2_read_button(btnRaw);
         } else {  // I2C_PAD_JOYV1_1
             if (!joystick1_read_all(x8, y8, btnRaw)) return 0;
-            y8 = 255 - y8;  // v1.1 Y axis is inverted relative to JoyV2
+            x8 = 255 - x8;  // v1.1 X axis is inverted relative to JoyV2
         }
 
         uint32_t state = 0;
