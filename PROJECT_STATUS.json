@@ -1,0 +1,11 @@
+{
+  "schema_id": "hawkar.project-status.v1",
+  "project": "Cardputer Game Station working copy",
+  "repository": "https://github.com/Hawkar-usls/Cardputer-Game-Station-Emulators",
+  "portfolio_class": "upstream_derived_working_copy",
+  "upstream": "https://github.com/geo-tp/Cardputer-Game-Station-Emulators",
+  "last_reviewed": "2026-08-09",
+  "base_authorship_claimed_by_hawkar": false,
+  "flagship_hawkar_research": false,
+  "evaluation_rule": "Evaluate Hawkar-specific work only from an explicit diff against the corresponding upstream revision."
+}
